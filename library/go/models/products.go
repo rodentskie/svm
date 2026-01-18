@@ -17,6 +17,10 @@ type Product struct {
 	CreatedAt    time.Time      `gorm:"<-:false" json:"created_at"`
 	UpdatedAt    time.Time      `gorm:"<-:false" json:"updated_at"`
 	DeletedAt    gorm.DeletedAt `gorm:"index" json:"deleted_at"`
+
+	// Relationships
+	Transactions         []Transaction         `gorm:"foreignKey:ProductID" json:"transactions,omitempty"`
+	InventoryAdjustments []InventoryAdjustment `gorm:"foreignKey:ProductID" json:"inventory_adjustments,omitempty"`
 }
 
 func (Product) TableName() string {

@@ -16,6 +16,10 @@ type InventoryAdjustment struct {
 	CreatedAt      time.Time      `gorm:"<-:false" json:"created_at"`
 	UpdatedAt      time.Time      `gorm:"<-:false" json:"updated_at"`
 	DeletedAt      gorm.DeletedAt `gorm:"index" json:"deleted_at"`
+
+	// Relationships
+	Product        Product `gorm:"constraint:OnUpdate:CASCADE,OnDelete:RESTRICT" json:"product,omitempty"`
+	AdjustedByUser User    `gorm:"foreignKey:AdjustedBy;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT" json:"adjusted_by_user,omitempty"`
 }
 
 func (InventoryAdjustment) TableName() string {
