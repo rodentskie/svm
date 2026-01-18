@@ -19,12 +19,12 @@ CREATE OR REPLACE FUNCTION update_product_quantity_on_transaction()
 RETURNS TRIGGER AS $$
 BEGIN
     -- Subtract quantity from products for purchase transactions
-    IF NEW.transaction_type = 'purchase' THEN
+    IF NEW.transaction_type = 'purchase' OR NEW.transaction_type = 'adjustment' THEN
         UPDATE products
         SET quantity = quantity - NEW.quantity
         WHERE id = NEW.product_id;
     -- Add quantity to products for restock transactions
-    ELSIF NEW.transaction_type = 'restock' THEN
+    ELSIF NEW.transaction_type = 'restock' OR NEW.transaction_type = 'refund' THEN
         UPDATE products
         SET quantity = quantity + NEW.quantity
         WHERE id = NEW.product_id;

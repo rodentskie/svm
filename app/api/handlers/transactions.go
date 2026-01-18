@@ -8,6 +8,7 @@ import (
 	"library/go/responses"
 	"library/go/structs"
 	"net/http"
+	"strconv"
 
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -69,6 +70,25 @@ func CreateTransaction(w http.ResponseWriter, r *http.Request) {
 	if err := db.Create(&transaction).Error; err != nil {
 		transactionLog.Error("failed to create transaction", zap.Error(err))
 		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to create transaction")
+		return
+	}
+
+	responses.NoContentResponse(w)
+}
+
+func CreateTransactionAdjustment(w http.ResponseWriter, r *http.Request) {
+	defer transactionLog.Sync()
+
+	// Extract product ID from URL path
+	productIDStr := r.PathValue("productId")
+	if productIDStr == "" {
+		responses.ErrorResponse(w, http.StatusBadRequest, "Product ID is required")
+		return
+	}
+
+	productID, err := strconv.ParseUint(productIDStr, 10, 32)
+	if err != nil {
+		responses.ErrorResponse(w, http.StatusBadRequest, "Invalid product ID")
 		return
 	}
 
