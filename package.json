@@ -2,10 +2,15 @@
   "name": "@svm/source",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "lint": "nx run-many -t lint --parallel=5",
+    "test": "nx run-many -t test --parallel=5",
+    "tidy": "nx run-many -t tidy --parallel=5"
+  },
   "private": true,
   "dependencies": {
-    "@nx-go/nx-go": "3.3.1"
+    "@nx-go/nx-go": "3.3.1",
+    "@obiente-lab/nx-go": "^3.4.1"
   },
   "devDependencies": {
     "@nx/workspace": "22.3.3",

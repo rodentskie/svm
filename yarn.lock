@@ -58,7 +58,7 @@
     "@nx/devkit" ">= 17 < 21"
     tslib "^2.3.0"
 
-"@nx/devkit@22.3.3":
+"@nx/devkit@22.3.3", "@nx/devkit@>= 17":
   version "22.3.3"
   resolved "https://registry.yarnpkg.com/@nx/devkit/-/devkit-22.3.3.tgz#fd90775b987fea4eed7aabf498c8e51c88453819"
   integrity sha512-/hxcdhE+QDalsWEbJurHtZh9aY27taHeImbCVJnogwv85H3RbAE+0YuKXGInutfLszAs7phwzli71yq+d2P45Q==
@@ -149,6 +149,14 @@
     semver "^7.6.3"
     tslib "^2.3.0"
     yargs-parser "21.1.1"
+
+"@obiente-lab/nx-go@^3.4.1":
+  version "3.4.1"
+  resolved "https://registry.yarnpkg.com/@obiente-lab/nx-go/-/nx-go-3.4.1.tgz#84b451b7403d99cfbbb0d2391c478e3f3a7ac27e"
+  integrity sha512-sfx6HjlbEOHtD9gCioZG3G9TscHgq/X91M9/XkV+Mt1rlSzhf8846+l7rBCABF3WKuXlKMI+rNl0ySzG1DiJIA==
+  dependencies:
+    "@nx/devkit" ">= 17"
+    tslib "^2.3.0"
 
 "@sinclair/typebox@^0.34.0":
   version "0.34.47"

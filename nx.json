@@ -13,6 +13,6 @@
     ]
   },
   "plugins": [
-    "@nx-go/nx-go"
+    "@obiente-lab/nx-go"
   ]
 }
