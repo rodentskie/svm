@@ -7,8 +7,8 @@ CREATE TABLE transactions (
     product_id INT NOT NULL REFERENCES products(id) ON DELETE RESTRICT ON UPDATE CASCADE,
     quantity INT NOT NULL,
     transaction_type transaction_type NOT NULL DEFAULT 'purchase',
-    payment_method payment_method NOT NULL,
-    total_amount DECIMAL(10, 2) NOT NULL,
+    payment_method payment_method,
+    total_amount DECIMAL(10, 2) DEFAULT 0.00 CHECK (total_amount >= 0),
     status transaction_status NOT NULL DEFAULT 'pending',
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
