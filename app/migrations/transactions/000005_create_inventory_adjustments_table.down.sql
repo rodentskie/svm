@@ -1,0 +1,2 @@
+DROP TRIGGER IF EXISTS update_inventory_adjustments_updated_at ON inventory_adjustments;
+DROP TABLE IF EXISTS inventory_adjustments;
