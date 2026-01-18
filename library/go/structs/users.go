@@ -5,6 +5,9 @@ type CreateUserRequest struct {
 	Password        string `json:"password" binding:"required"`
 	ReEnterPassword string `json:"re_enter_password" binding:"required"`
 	Role            string `json:"role" binding:"required"`
+	Name            string `json:"name" binding:"required"`
+	Email           string `json:"email" binding:"required"`
+	Phone           string `json:"phone" binding:"required"`
 }
 
 type UpdateProfileRequest struct {

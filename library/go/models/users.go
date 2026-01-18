@@ -18,7 +18,7 @@ type User struct {
 	IsActive     bool           `gorm:"default:true" json:"is_active"`
 	CreatedAt    time.Time      `gorm:"<-:false" json:"created_at"`
 	UpdatedAt    time.Time      `gorm:"<-:false" json:"updated_at"`
-	DeletedAt    gorm.DeletedAt `gorm:"index" json:"deleted_at"`
+	DeletedAt    gorm.DeletedAt `gorm:"index" json:"-"`
 
 	// Relationships
 	InventoryAdjustments []InventoryAdjustment `gorm:"foreignKey:AdjustedBy" json:"inventory_adjustments,omitempty"`
