@@ -49,4 +49,35 @@ func MainRoutes(prefix string, mux *http.ServeMux) {
 		fmt.Sprintf("GET /%s/users", prefix),
 		middleware.AuthMiddleware(db)(http.HandlerFunc(handlers.GetAllUsers)),
 	)
+
+	mux.Handle(
+		fmt.Sprintf("GET /%s/users/{userId}", prefix),
+		middleware.AuthMiddleware(db)(http.HandlerFunc(handlers.GetSingleUser)),
+	)
+
+	// products
+	mux.Handle(
+		fmt.Sprintf("GET /%s/products", prefix),
+		middleware.AuthMiddleware(db)(http.HandlerFunc(handlers.GetAllProducts)),
+	)
+
+	mux.Handle(
+		fmt.Sprintf("GET /%s/products/{productId}", prefix),
+		middleware.AuthMiddleware(db)(http.HandlerFunc(handlers.GetSingleProduct)),
+	)
+
+	mux.Handle(
+		fmt.Sprintf("PATCH /%s/products/{productId}", prefix),
+		middleware.AuthMiddleware(db)(http.HandlerFunc(handlers.PatchSingleProduct)),
+	)
+
+	mux.Handle(
+		fmt.Sprintf("DELETE /%s/products/{productId}", prefix),
+		middleware.AuthMiddleware(db)(http.HandlerFunc(handlers.DeleteSingleProduct)),
+	)
+
+	mux.Handle(
+		fmt.Sprintf("POST /%s/products", prefix),
+		middleware.AuthMiddleware(db)(http.HandlerFunc(handlers.CreateProduct)),
+	)
 }

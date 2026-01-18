@@ -16,7 +16,7 @@ type Product struct {
 	Location     string         `gorm:"size:50" json:"location"`
 	CreatedAt    time.Time      `gorm:"<-:false" json:"created_at"`
 	UpdatedAt    time.Time      `gorm:"<-:false" json:"updated_at"`
-	DeletedAt    gorm.DeletedAt `gorm:"index" json:"deleted_at"`
+	DeletedAt    gorm.DeletedAt `gorm:"index" json:"-"`
 
 	// Relationships
 	Transactions         []Transaction         `gorm:"foreignKey:ProductID" json:"transactions,omitempty"`

@@ -296,3 +296,52 @@ func GetAllUsers(w http.ResponseWriter, r *http.Request) {
 
 	responses.SuccessResponse(w, usersResponse)
 }
+
+func GetSingleUser(w http.ResponseWriter, r *http.Request) {
+	defer userLog.Sync()
+
+	// Extract user ID from URL path
+	userIDStr := r.PathValue("userId")
+	if userIDStr == "" {
+		responses.ErrorResponse(w, http.StatusBadRequest, "User ID is required")
+		return
+	}
+
+	userID, err := strconv.ParseUint(userIDStr, 10, 32)
+	if err != nil {
+		responses.ErrorResponse(w, http.StatusBadRequest, "Invalid user ID")
+		return
+	}
+
+	// Get database connection
+	db, err := database.GetDB()
+	if err != nil {
+		userLog.Error("failed to get database connection", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Database connection error")
+		return
+	}
+
+	// Fetch user from database
+	var user models.User
+	if err := db.First(&user, userID).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			responses.ErrorResponse(w, http.StatusNotFound, "User not found")
+			return
+		}
+		userLog.Error("failed to fetch user profile", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to fetch profile")
+		return
+	}
+
+	// Build response
+	profileResponse := structs.UserProfileResponse{
+		ID:       user.ID,
+		Username: user.Username,
+		Name:     user.Name,
+		Email:    user.Email,
+		Phone:    user.Phone,
+		Role:     user.Role,
+	}
+
+	responses.SuccessResponse(w, profileResponse)
+}
