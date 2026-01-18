@@ -4,12 +4,10 @@ import "time"
 
 // CreateTransactionRequest represents the request body for creating a transaction
 type CreateTransactionRequest struct {
-	ProductID        uint    `json:"product_id" validate:"required"`
-	Quantity         int     `json:"quantity" validate:"required,min=1"`
-	PaymentMethod    string  `json:"payment_method" validate:"required,oneof=rfid e-wallet"`
-	IdempotencyKey   string  `json:"idempotency_key" validate:"required,min=16,max=255"`
-	PaymentReference *string `json:"payment_reference,omitempty" validate:"omitempty,max=255"`
-	Metadata         *string `json:"metadata,omitempty"`
+	Location      string `json:"location" validate:"required"`
+	Type          string `json:"type" validate:"required"`
+	Quantity      uint16 `json:"quantity" validate:"required,min=1"`
+	PaymentMethod string `json:"payment_method" validate:"required,oneof=rfid e-wallet"`
 }
 
 // UpdateTransactionRequest represents the request body for updating a transaction
