@@ -92,5 +92,61 @@ func CreateTransactionAdjustment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Parse request body
+	var req structs.CreateTransactionAdjustmentRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		transactionLog.Error("failed to decode request body", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	if req.Quantity == 0 || req.Reason == "" {
+		responses.ErrorResponse(w, http.StatusBadRequest, "Quantity and reason are required")
+		return
+	}
+
+	// Get database connection
+	db, err := database.GetDB()
+	if err != nil {
+		transactionLog.Error("failed to get database connection", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Database connection error")
+		return
+	}
+
+	// check product existence
+	var product models.Product
+	if err := db.First(&product, productID).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			responses.ErrorResponse(w, http.StatusNotFound, "Product not found")
+			return
+		}
+		transactionLog.Error("failed to fetch product", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to fetch product")
+		return
+	}
+
+	// userId from token
+	// Get user ID from context (set by AuthMiddleware)
+	userID, ok := r.Context().Value("user_id").(uint)
+	if !ok {
+		responses.ErrorResponse(w, http.StatusUnauthorized, "User not authenticated")
+		return
+	}
+
+	// Create inventory adjustment
+	inventoryAdjustment := models.InventoryAdjustment{
+		ProductID:      uint(productID),
+		QuantityChange: int(req.Quantity),
+		Reason:         req.Reason,
+		Notes:          req.Notes,
+		AdjustedBy:     userID,
+	}
+
+	if err := db.Create(&inventoryAdjustment).Error; err != nil {
+		transactionLog.Error("failed to create inventory adjustment", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to create inventory adjustment")
+		return
+	}
+
 	responses.NoContentResponse(w)
 }

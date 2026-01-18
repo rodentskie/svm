@@ -2,10 +2,9 @@
 CREATE OR REPLACE FUNCTION create_transaction_from_inventory_adjustment()
 RETURNS TRIGGER AS $$
 DECLARE
-    v_transaction_type TEXT;
+    v_transaction_type transaction_type;
     v_quantity INT;
     v_product_price DECIMAL(10,2);
-    v_total_amount DECIMAL(10,2);
 BEGIN
     -- Determine transaction type and quantity based on quantity_change
     IF NEW.quantity_change > 0 THEN
@@ -26,14 +25,6 @@ BEGIN
         RETURN NEW;
     END IF;
     
-    -- Get product price for calculating total amount
-    SELECT price INTO v_product_price
-    FROM products
-    WHERE id = NEW.product_id;
-    
-    -- Calculate total amount (for restock/refund/adjustment)
-    v_total_amount := v_product_price * v_quantity;
-    
     -- Insert transaction record
     INSERT INTO transactions (
         product_id,
@@ -49,7 +40,7 @@ BEGIN
         v_quantity,
         v_transaction_type,
         null,
-        v_total_amount,
+        0.00,
         'completed', -- system transactions are automatically completed
         NOW(),
         NOW()
