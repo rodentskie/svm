@@ -11,6 +11,7 @@ import (
 	"net/http"
 
 	"go.uber.org/zap"
+	"gorm.io/gorm"
 )
 
 var userLog = logger.NewLogger("users-handler")
@@ -19,7 +20,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	defer userLog.Sync()
 
 	// Parse request body
-	var req structs.CreateUserRequest
+	var req structs.CreateUpdateUserRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		userLog.Error("failed to decode request body", zap.Error(err))
 		responses.ErrorResponse(w, http.StatusBadRequest, "Invalid request body")
@@ -98,4 +99,73 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	responses.CreatedResponse(w, userResponse)
+}
+
+func UpdateProfile(w http.ResponseWriter, r *http.Request) {
+	defer userLog.Sync()
+
+	userId := r.PathValue("userId")
+
+	// Parse request body
+	var req structs.CreateUpdateUserRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		userLog.Error("failed to decode request body", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	// Validate required fields
+	if req.Username == "" || req.Password == "" || req.ReEnterPassword == "" || req.Role == "" || req.Name == "" || req.Email == "" || req.Phone == "" {
+		responses.ErrorResponse(w, http.StatusBadRequest, "Username, password, re_enter_password, role, name, email, and phone are required")
+		return
+	}
+
+	// Validate passwords match
+	if req.Password != req.ReEnterPassword {
+		responses.ErrorResponse(w, http.StatusBadRequest, "Passwords do not match")
+		return
+	}
+
+	// Validate role
+	validRoles := map[string]bool{"admin": true, "operator": true}
+	if !validRoles[req.Role] {
+		responses.ErrorResponse(w, http.StatusBadRequest, "Invalid role. Must be one of: admin, operator")
+		return
+	}
+
+	// Get database connection
+	db, err := database.GetDB()
+	if err != nil {
+		userLog.Error("failed to get database connection", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Database connection error")
+		return
+	}
+
+	// Fetch current user
+	var user models.User
+	if err := db.First(&user, userId).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			responses.ErrorResponse(w, http.StatusNotFound, "User not found")
+			return
+		}
+		userLog.Error("failed to fetch user", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to update profile")
+		return
+	}
+
+	// Update user
+	if err := db.Model(&user).Updates(req).Error; err != nil {
+		userLog.Error("failed to update user profile", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to update profile")
+		return
+	}
+
+	// Fetch updated user
+	if err := db.First(&user, userId).Error; err != nil {
+		userLog.Error("failed to fetch updated user", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Profile updated but failed to fetch")
+		return
+	}
+
+	responses.NoContentResponse(w)
 }

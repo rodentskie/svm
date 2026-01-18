@@ -39,6 +39,11 @@ func CreatedResponse(w http.ResponseWriter, data any) {
 	JSONResponse(w, http.StatusCreated, data)
 }
 
+// NoContentResponse sends a 204 No Content response
+func NoContentResponse(w http.ResponseWriter) {
+	w.WriteHeader(http.StatusNoContent)
+}
+
 // BadRequestResponse sends a 400 Bad Request response
 func BadRequestResponse(w http.ResponseWriter, message string) {
 	ErrorResponse(w, http.StatusBadRequest, message)

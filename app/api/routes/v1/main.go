@@ -30,4 +30,8 @@ func MainRoutes(prefix string, mux *http.ServeMux) {
 		fmt.Sprintf("POST /%s/users", prefix),
 		middleware.AuthMiddleware(db)(http.HandlerFunc(handlers.CreateUser)),
 	)
+	mux.Handle(
+		fmt.Sprintf("PATCH /%s/users/{userId}", prefix),
+		middleware.AuthMiddleware(db)(http.HandlerFunc(handlers.UpdateProfile)),
+	)
 }
