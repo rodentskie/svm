@@ -9,6 +9,7 @@ import (
 	"library/go/responses"
 	"library/go/structs"
 	"net/http"
+	"strconv"
 
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -164,6 +165,52 @@ func UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	if err := db.First(&user, userId).Error; err != nil {
 		userLog.Error("failed to fetch updated user", zap.Error(err))
 		responses.ErrorResponse(w, http.StatusInternalServerError, "Profile updated but failed to fetch")
+		return
+	}
+
+	responses.NoContentResponse(w)
+}
+
+func DeleteUserByID(w http.ResponseWriter, r *http.Request) {
+	defer userLog.Sync()
+
+	// Extract user ID from URL path
+	userIDStr := r.PathValue("userId")
+	if userIDStr == "" {
+		responses.ErrorResponse(w, http.StatusBadRequest, "User ID is required")
+		return
+	}
+
+	userID, err := strconv.ParseUint(userIDStr, 10, 32)
+	if err != nil {
+		responses.ErrorResponse(w, http.StatusBadRequest, "Invalid user ID")
+		return
+	}
+
+	// Get database connection
+	db, err := database.GetDB()
+	if err != nil {
+		userLog.Error("failed to get database connection", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Database connection error")
+		return
+	}
+
+	// Fetch user
+	var user models.User
+	if err := db.First(&user, uint(userID)).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			responses.ErrorResponse(w, http.StatusNotFound, "User not found")
+			return
+		}
+		userLog.Error("failed to fetch user", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to delete user")
+		return
+	}
+
+	// Soft delete using GORM
+	if err := db.Delete(&user).Error; err != nil {
+		userLog.Error("failed to delete user", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to delete user")
 		return
 	}
 

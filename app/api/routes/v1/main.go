@@ -34,4 +34,9 @@ func MainRoutes(prefix string, mux *http.ServeMux) {
 		fmt.Sprintf("PATCH /%s/users/{userId}", prefix),
 		middleware.AuthMiddleware(db)(http.HandlerFunc(handlers.UpdateProfile)),
 	)
+
+	mux.Handle(
+		fmt.Sprintf("DELETE /%s/users/{userId}", prefix),
+		middleware.AuthMiddleware(db)(http.HandlerFunc(handlers.DeleteUserByID)),
+	)
 }
