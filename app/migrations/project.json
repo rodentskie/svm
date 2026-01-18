@@ -25,6 +25,24 @@
     },
     "tidy": {
       "executor": "@nx-go/nx-go:tidy"
+    },
+    "up": {
+      "executor": "@nx-go/nx-go:serve",
+      "options": {
+        "main": "{projectRoot}/main.go up"
+      }
+    },
+    "down": {
+      "executor": "@nx-go/nx-go:serve",
+      "options": {
+        "main": "{projectRoot}/main.go down"
+      }
+    },
+     "drop": {
+      "executor": "@nx-go/nx-go:serve",
+      "options": {
+        "main": "{projectRoot}/main.go drop"
+      }
     }
   }
 }
