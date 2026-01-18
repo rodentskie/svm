@@ -216,3 +216,83 @@ func DeleteUserByID(w http.ResponseWriter, r *http.Request) {
 
 	responses.NoContentResponse(w)
 }
+
+func GetProfile(w http.ResponseWriter, r *http.Request) {
+	defer userLog.Sync()
+
+	// Get user ID from context (set by AuthMiddleware)
+	userID, ok := r.Context().Value("user_id").(uint)
+	if !ok {
+		responses.ErrorResponse(w, http.StatusUnauthorized, "User not authenticated")
+		return
+	}
+
+	// Get database connection
+	db, err := database.GetDB()
+	if err != nil {
+		userLog.Error("failed to get database connection", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Database connection error")
+		return
+	}
+
+	// Fetch user from database
+	var user models.User
+	if err := db.First(&user, userID).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			responses.ErrorResponse(w, http.StatusNotFound, "User not found")
+			return
+		}
+		userLog.Error("failed to fetch user profile", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to fetch profile")
+		return
+	}
+
+	// Build response
+	profileResponse := structs.UserProfileResponse{
+		ID:       user.ID,
+		Username: user.Username,
+		Name:     user.Name,
+		Email:    user.Email,
+		Phone:    user.Phone,
+		Role:     user.Role,
+	}
+
+	responses.SuccessResponse(w, profileResponse)
+}
+
+func GetAllUsers(w http.ResponseWriter, r *http.Request) {
+	defer userLog.Sync()
+
+	// Get database connection
+	db, err := database.GetDB()
+	if err != nil {
+		userLog.Error("failed to get database connection", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Database connection error")
+		return
+	}
+
+	// Fetch all users
+	var users []models.User
+	if err := db.Find(&users).Error; err != nil {
+		userLog.Error("failed to fetch users", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to fetch users")
+		return
+	}
+
+	// Build response
+	var usersResponse []structs.GetUsersResponse
+	for _, user := range users {
+		usersResponse = append(usersResponse, structs.GetUsersResponse{
+			ID:        user.ID,
+			Username:  user.Username,
+			Name:      user.Name,
+			Email:     user.Email,
+			Phone:     user.Phone,
+			Role:      user.Role,
+			CreatedAt: user.CreatedAt.Format("2006-01-02 15:04:05"),
+			UpdatedAt: user.UpdatedAt.Format("2006-01-02 15:04:05"),
+		})
+	}
+
+	responses.SuccessResponse(w, usersResponse)
+}

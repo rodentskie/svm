@@ -39,4 +39,14 @@ func MainRoutes(prefix string, mux *http.ServeMux) {
 		fmt.Sprintf("DELETE /%s/users/{userId}", prefix),
 		middleware.AuthMiddleware(db)(http.HandlerFunc(handlers.DeleteUserByID)),
 	)
+
+	mux.Handle(
+		fmt.Sprintf("GET /%s/users/me", prefix),
+		middleware.AuthMiddleware(db)(http.HandlerFunc(handlers.GetProfile)),
+	)
+
+	mux.Handle(
+		fmt.Sprintf("GET /%s/users", prefix),
+		middleware.AuthMiddleware(db)(http.HandlerFunc(handlers.GetAllUsers)),
+	)
 }
