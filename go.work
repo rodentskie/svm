@@ -1,1 +1,14 @@
 go 1.25
+
+use (
+	./app/api
+	./app/migrations
+	./library/go/database
+	./library/go/env
+	./library/go/jwt
+	./library/go/logger
+	./library/go/models
+	./library/go/password
+	./library/go/responses
+	./library/go/structs
+)
