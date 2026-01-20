@@ -91,4 +91,30 @@ func MainRoutes(prefix string, mux *http.ServeMux) {
 		fmt.Sprintf("POST /%s/transactions/adjustments/{productId}", prefix),
 		middleware.AuthMiddleware(db)(http.HandlerFunc(handlers.CreateTransactionAdjustment)),
 	)
+
+	// students
+	mux.Handle(
+		fmt.Sprintf("GET /%s/students", prefix),
+		middleware.AuthMiddleware(db)(http.HandlerFunc(handlers.GetAllStudents)),
+	)
+
+	mux.Handle(
+		fmt.Sprintf("GET /%s/students/{studentId}", prefix),
+		middleware.AuthMiddleware(db)(http.HandlerFunc(handlers.GetSingleStudent)),
+	)
+
+	mux.Handle(
+		fmt.Sprintf("POST /%s/students", prefix),
+		middleware.AuthMiddleware(db)(http.HandlerFunc(handlers.CreateStudent)),
+	)
+
+	mux.Handle(
+		fmt.Sprintf("PATCH /%s/students/{studentId}", prefix),
+		middleware.AuthMiddleware(db)(http.HandlerFunc(handlers.UpdateStudent)),
+	)
+
+	mux.Handle(
+		fmt.Sprintf("DELETE /%s/students/{studentId}", prefix),
+		middleware.AuthMiddleware(db)(http.HandlerFunc(handlers.DeleteStudent)),
+	)
 }
