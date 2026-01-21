@@ -5,12 +5,10 @@ CREATE TABLE students_transaction_history (
     type VARCHAR(20) NOT NULL CHECK (type IN ('load', 'purchase', 'refund')),
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP,
     FOREIGN KEY (student_id) REFERENCES students(id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 CREATE INDEX idx_students_transaction_history_student_id ON students_transaction_history(student_id);
-CREATE INDEX idx_students_transaction_history_deleted_at ON students_transaction_history(deleted_at);
 
 CREATE TRIGGER update_students_transaction_history_updated_at
     BEFORE UPDATE ON students_transaction_history
