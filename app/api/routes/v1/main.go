@@ -92,6 +92,8 @@ func MainRoutes(prefix string, mux *http.ServeMux) {
 		middleware.AuthMiddleware(db)(http.HandlerFunc(handlers.CreateTransactionAdjustment)),
 	)
 
+	// TO IMPLEMENT LATER: transaction details routes
+
 	// students
 	mux.Handle(
 		fmt.Sprintf("GET /%s/students", prefix),
