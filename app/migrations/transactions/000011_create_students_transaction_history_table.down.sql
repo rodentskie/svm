@@ -1,0 +1,2 @@
+DROP TRIGGER IF EXISTS update_students_transaction_history_updated_at ON students_transaction_history;
+DROP TABLE IF EXISTS students_transaction_history;
