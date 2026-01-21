@@ -114,6 +114,11 @@ func MainRoutes(prefix string, mux *http.ServeMux) {
 	)
 
 	mux.Handle(
+		fmt.Sprintf("POST /%s/students/{studentId}/load", prefix),
+		middleware.AuthMiddleware(db)(http.HandlerFunc(handlers.UpdateStudentLoad)),
+	)
+
+	mux.Handle(
 		fmt.Sprintf("DELETE /%s/students/{studentId}", prefix),
 		middleware.AuthMiddleware(db)(http.HandlerFunc(handlers.DeleteStudent)),
 	)

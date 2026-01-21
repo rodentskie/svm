@@ -224,8 +224,6 @@ func UpdateStudent(w http.ResponseWriter, r *http.Request) {
 	if req.RFID != "" {
 		updates["rfid"] = req.RFID
 	}
-	// Always update load if provided (including 0 value)
-	updates["load"] = req.Load
 
 	// Update student
 	if err := db.Model(&student).Updates(updates).Error; err != nil {
@@ -296,4 +294,107 @@ func DeleteStudent(w http.ResponseWriter, r *http.Request) {
 	studentLog.Info("student deleted successfully", zap.Uint("student_id", uint(studentID)))
 
 	responses.NoContentResponse(w)
+}
+
+// UpdateStudentLoad updates a student's load (add or refund)
+func UpdateStudentLoad(w http.ResponseWriter, r *http.Request) {
+	defer studentLog.Sync()
+
+	// Get student ID from URL path
+	studentIDStr := r.PathValue("studentId")
+	studentID, err := strconv.ParseUint(studentIDStr, 10, 64)
+	if err != nil {
+		responses.ErrorResponse(w, http.StatusBadRequest, "Invalid student ID")
+		return
+	}
+
+	// Parse request body
+	var req structs.StudentLoadRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		studentLog.Error("failed to decode request body", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	// Validate load amount
+	if req.Load == 0 {
+		responses.ErrorResponse(w, http.StatusBadRequest, "Load amount is required and cannot be zero")
+		return
+	}
+
+	// Set default reason if not provided
+	if req.Reason == "" {
+		req.Reason = "load"
+	}
+
+	// Validate reason
+	if req.Reason != "load" && req.Reason != "refund" {
+		responses.ErrorResponse(w, http.StatusBadRequest, "Reason must be either 'load' or 'refund'")
+		return
+	}
+
+	// Get database connection
+	db, err := database.GetDB()
+	if err != nil {
+		studentLog.Error("failed to get database connection", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Database connection error")
+		return
+	}
+
+	// Check if student exists
+	var student models.Student
+	if err := db.First(&student, studentID).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			responses.ErrorResponse(w, http.StatusNotFound, "Student not found")
+			return
+		}
+		studentLog.Error("failed to fetch student", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to fetch student")
+		return
+	}
+
+	// Calculate new load
+	newLoad := student.Load
+	switch req.Reason {
+	case "load":
+		newLoad += req.Load
+	case "refund":
+		newLoad -= req.Load
+		// Prevent negative balance
+		if newLoad < 0 {
+			responses.ErrorResponse(w, http.StatusBadRequest, "Insufficient balance for refund")
+			return
+		}
+	}
+
+	// Update student load
+	if err := db.Model(&student).Update("load", newLoad).Error; err != nil {
+		studentLog.Error("failed to update student load", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to update student load")
+		return
+	}
+
+	// Fetch updated student
+	if err := db.First(&student, studentID).Error; err != nil {
+		studentLog.Error("failed to fetch updated student", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to fetch updated student")
+		return
+	}
+
+	studentLog.Info("student load updated successfully",
+		zap.String("name", student.Name),
+		zap.Uint("student_id", student.ID),
+		zap.String("reason", req.Reason),
+		zap.Float64("amount", req.Load),
+		zap.Float64("new_load", student.Load))
+
+	// Build response
+	studentResponse := structs.StudentResponse{
+		ID:   student.ID,
+		Name: student.Name,
+		RFID: student.RFID,
+		Load: student.Load,
+	}
+
+	responses.SuccessResponse(w, studentResponse)
 }
