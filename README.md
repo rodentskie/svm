@@ -69,3 +69,38 @@ tidy
 ```bash
 nx tidy <name>
 ```
+
+
+[Next Getting Started](https://20.nx.dev/nx-api/next)
+
+✨ **Next library** ✨
+
+
+```
+NAME=theme-switch && nx g @nx/next:lib $NAME \
+    --directory library/next/$NAME \
+    --bundler none \
+    --linter eslint \
+    --unitTestRunner jest \
+    --style none
+
+To remove:
+nx g rm <name>
+```
+
+✨ **Next application** ✨
+
+
+```
+NAME=app && nx g @nx/next:app  $NAME --directory app/$NAME
+
+To remove:
+nx g rm <name>
+```
+
+✨ **Charka Snippets** ✨
+
+
+```
+npx @chakra-ui/cli snippet add --all --outdir snippets/ --tsx
+```
