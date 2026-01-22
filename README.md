@@ -102,5 +102,5 @@ nx g rm <name>
 
 
 ```
-npx @chakra-ui/cli snippet add --all --outdir snippets/ --tsx
+npx @chakra-ui/cli snippet add --all --outdir library/next/components/src/ --tsx
 ```
