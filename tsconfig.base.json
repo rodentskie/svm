@@ -15,7 +15,7 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@svm/components": ["library/next/components/src/index.ts"]
+      "@svm/components/*": ["library/next/components/src/lib/*"]
     }
   },
   "exclude": ["node_modules", "tmp"]
