@@ -1,24 +1,31 @@
 # SVM - Go Monorepo AI Instructions
 
 ## Project Description
-This is a `Smart Vending Machine`. It is built using Go in a monorepo structure managed by Nx. The backend consists of an API server and a migrations CLI, with reusable libraries for database access, authentication, models, and more.
+This is a **Smart Vending Machine** system. It is built using Go in a monorepo structure managed by Nx. The backend consists of an API server and a migrations CLI, with reusable libraries for database access, authentication, models, and more. The frontend is a Next.js 16 app using React 19 and Chakra UI.
 
 ## Architecture Overview
 
 This is a **Go monorepo managed by Nx** (`@obiente-lab/nx-go` plugin) using **Go workspaces** (`go.work`). The project structure separates concerns into:
-- `app/`: Executable applications (api server, migrations CLI)
+- `app/`: Executable applications (API server, migrations CLI, Next.js frontend)
 - `library/go/`: Reusable Go packages (database, auth, models, etc.)
+- `library/next/`: Reusable React/Next.js components
 
 All Go modules are independent with their own `go.mod`, linked via `go.work` for local development. Each component has a `project.json` defining Nx targets (build, serve, test, lint, tidy).
 
 ## Critical Commands (Use Nx, NOT go directly)
 
 ```bash
+# Start PostgreSQL database
+docker-compose up -d
+
 # Run migrations (uses golang-migrate from file://transactions)
 nx serve migrations up|down|drop
 
-# Serve API application
+# Serve API application (uses gow for hot-reload)
 nx serve api
+
+# Serve Next.js frontend
+nx dev app
 
 # Test/lint/tidy specific project
 nx test <project-name>
@@ -27,11 +34,14 @@ nx tidy <project-name>
 
 # Run targets across multiple projects
 nx run-many -t test --parallel=5
+nx run-many -t lint --parallel=5
+nx run-many -t tidy --parallel=5
 ```
 
 **Important**: 
 - Always use `nx` commands instead of `go` commands directly. The monorepo structure requires Nx executors.
-- Look at always `library/go/models` for data models, do not create fields that don't exist.
+- Always look at `library/go/models` for data models, do not create fields that don't exist.
+- API uses `gow` for hot-reload during development (defined in `project.json`).
 
 ## Database & Migrations
 
@@ -39,9 +49,18 @@ nx run-many -t test --parallel=5
 - **ORM**: GORM for app code, golang-migrate for schema migrations
 - **Migrations location**: `app/migrations/transactions/*.sql`
 - **Pattern**: Migrations use SQL with trigger functions (e.g., `update_updated_at_column()` in `000001_create_functions.up.sql`)
+- **Naming convention**: `{number}_{description}.{up|down}.sql` (e.g., `000002_create_user_table.up.sql`)
 - **DATABASE_URL**: Environment variable (defaults provided if not set)
+- **Trigger pattern**: All tables auto-update `updated_at` via `BEFORE UPDATE` triggers calling `update_updated_at_column()`
 
 Start database: `docker-compose up -d`
+
+### Migration Workflow
+1. Create `.up.sql` and `.down.sql` files in `app/migrations/transactions/`
+2. Include trigger setup for auto-updating timestamps: `CREATE TRIGGER update_<table>_updated_at BEFORE UPDATE ON <table> FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();`
+3. Run with: `nx serve migrations up` (from project root)
+4. Rollback with: `nx serve migrations down` (rolls back last migration)
+5. Drop all: `nx serve migrations drop` (wipes entire schema)
 
 ## Go Package Import Patterns
 
@@ -63,13 +82,16 @@ This is configured via `go.work` which links all modules. When creating new libr
 - Use GORM struct tags with JSON tags
 - Sensitive fields use `json:"-"` (e.g., `PasswordHash`, `JwtToken`)
 - Timestamps use GORM conventions: `CreatedAt`, `UpdatedAt`, `DeletedAt`
-- Custom methods on models (e.g., `User.IsAdmin()`)
-- Example: [library/go/models/users.go](library/go/models/users.go)
+- Use `gorm:"<-:false"` for read-only timestamp fields
+- Custom methods on models (e.g., `User.IsAdmin()`, `Product.IsLowStock()`)
+- Relationships defined with `gorm:"foreignKey:FieldName"` and omitted from JSON with `omitempty`
+- Example: [library/go/models/users.go](library/go/models/users.go), [library/go/models/products.go](library/go/models/products.go)
 
 ### Request/Response DTOs (library/go/structs/)
-- Separate structs for API requests/responses (e.g., `LoginRequest`, `LoginResponse`)
-- Use `binding:"required"` tags for validation (Gin-compatible)
+- Separate structs for API requests/responses (e.g., `LoginRequest`, `LoginResponse` in `auth.go`)
+- Use `binding:"required"` tags for validation (Gin-compatible, though project uses stdlib)
 - Import `library/go/models` for embedded model types
+- Example: [library/go/structs/auth.go](library/go/structs/auth.go)
 
 ### API Responses (library/go/responses/)
 - Standardized response helpers: `SuccessResponse()`, `ErrorResponse()`, `CreatedResponse()`
@@ -94,6 +116,45 @@ This is configured via `go.work` which links all modules. When creating new libr
 ### Environment Variables (library/go/env/)
 - Helper: `env.GetEnv(key, defaultValue)` - always provide sensible defaults
 - Uses `godotenv` but gracefully handles missing `.env` files
+
+## API Architecture (app/api/)
+
+### HTTP Router (stdlib http.ServeMux)
+- Uses Go 1.22+ enhanced routing: `http.ServeMux` with method prefixes
+- Route pattern: `"POST /v1/login"` or `"GET /v1/users/{userId}"`
+- Path parameters extracted via `r.PathValue("userId")`
+- Routes organized in `app/api/routes/v1/main.go` using prefix pattern
+- Example: [app/api/routes/v1/main.go](app/api/routes/v1/main.go)
+
+### Handlers (app/api/handlers/)
+- Standard `http.HandlerFunc` signature: `func(w http.ResponseWriter, r *http.Request)`
+- Always use `responses.SuccessResponse()`, `ErrorResponse()`, etc. - never manual JSON encoding
+- Get path params with `r.PathValue("paramName")`
+- Parse request body with `json.NewDecoder(r.Body).Decode(&struct)`
+- Example: [app/api/handlers/login.go](app/api/handlers/login.go)
+
+### Middleware (app/api/middlewares/)
+- Middleware pattern: `func(db *gorm.DB) func(http.Handler) http.Handler`
+- AuthMiddleware validates JWT from `Authorization: Bearer <token>` header
+- Adds user context via `r.Context()` with key `"user"` (type `*models.User`)
+- Protected routes wrapped: `middleware.AuthMiddleware(db)(http.HandlerFunc(handler))`
+- Example: [app/api/middlewares/auth.go](app/api/middlewares/auth.go)
+
+### CORS Configuration
+- Uses `github.com/rs/cors` package
+- Default: allows `http://localhost:3000` (Next.js frontend)
+- Configured in [app/api/main.go](app/api/main.go) with `AllowCredentials: true`
+
+## Frontend (app/app/)
+
+- **Framework**: Next.js 16 with App Router
+- **React**: Version 19
+- **UI Library**: Chakra UI v3.31.0
+- **Theming**: next-themes for dark/light mode
+- **Icons**: react-icons
+- **Dev server**: Run with `nx dev app` (default port 3000)
+- **Build**: `nx build app` for production build
+- **Reusable components**: Create in `library/next/components/`
 
 ## Creating New Components
 
