@@ -14,6 +14,9 @@ const nextConfig = {
   turbopack: {
     root: path.join(__dirname, '../../'),
   },
+  experimental: {
+    optimizePackageImports: ["@chakra-ui/react"],
+  },
 };
 
 const plugins = [
