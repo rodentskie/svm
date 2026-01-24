@@ -1,4 +1,4 @@
-import { Flex, Box, Text } from '@chakra-ui/react';
+import { Flex, Box, Text, AbsoluteCenter, Center } from '@chakra-ui/react';
 import { ReactNode } from 'react';
 
 interface NavItemProps {
@@ -9,7 +9,13 @@ interface NavItemProps {
   onClick?: () => void;
 }
 
-export function NavItem({ icon, label, isCollapsed, isActive = false, onClick }: NavItemProps) {
+export function NavItem({
+  icon,
+  label,
+  isCollapsed,
+  isActive = false,
+  onClick,
+}: NavItemProps) {
   return (
     <Flex
       alignItems="center"
@@ -22,8 +28,12 @@ export function NavItem({ icon, label, isCollapsed, isActive = false, onClick }:
       justifyContent={isCollapsed ? 'center' : 'flex-start'}
       onClick={onClick}
     >
-      <Box fontSize="20px">{icon}</Box>
-      <Text display={{ base: 'none', md: isCollapsed ? 'none' : 'block' }}>{label}</Text>
+      <Center>
+        <Box fontSize="20px">{icon}</Box>
+      </Center>
+      <Text display={{ base: 'none', md: isCollapsed ? 'none' : 'block' }}>
+        {label}
+      </Text>
     </Flex>
   );
 }

@@ -66,7 +66,7 @@ export function SideNav({
       transition="width 0.2s"
       zIndex={9}
     >
-      <VStack align="stretch" p={4} gap={4}>
+      <VStack align="stretch" p={2} gap={4}>
         {/* Toggle Button - Hidden on mobile */}
         <Flex
           justify={isCollapsed ? 'center' : 'flex-end'}
@@ -83,7 +83,7 @@ export function SideNav({
         </Flex>
 
         {/* Navigation Items */}
-        <VStack align="stretch" gap={1} mt={4}>
+        <VStack align="stretch" gap={1}>
           {navItems.map((item) => (
             <NavItem
               key={item.id}
