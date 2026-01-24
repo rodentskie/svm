@@ -1,14 +1,16 @@
-import { Flex, HStack } from '@chakra-ui/react';
+import { Flex, HStack,Heading } from '@chakra-ui/react';
 import { Avatar } from '@svm/components/avatar';
 import { ColorModeButton } from '@svm/components/color-mode';
-import { GoogleLogo } from './GoogleLogo';
-
+import { VendingMachineLogo } from './VendingMachineLogo';
 interface TopNavBarProps {
   userName?: string;
   userAvatar?: string;
 }
 
-export function TopNavBar({ userName = 'User Name', userAvatar }: TopNavBarProps) {
+export function TopNavBar({
+  userName = 'User Name',
+  userAvatar,
+}: TopNavBarProps) {
   return (
     <Flex
       as="header"
@@ -26,7 +28,8 @@ export function TopNavBar({ userName = 'User Name', userAvatar }: TopNavBarProps
     >
       {/* Left: Logo */}
       <Flex alignItems="center" gap={2}>
-        <GoogleLogo />
+        <VendingMachineLogo height={50} width={30} />
+        <Heading size={'sm'}>S.V.M.</Heading>
       </Flex>
 
       {/* Right: Dark/Light Mode & Avatar */}

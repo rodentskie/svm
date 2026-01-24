@@ -1,8 +1,14 @@
 'use client';
 
-import { Box, Flex, IconButton, VStack, Text } from '@chakra-ui/react';
-import { FiMenu, FiX, FiUsers, FiShoppingCart, FiPackage, FiUserCheck } from 'react-icons/fi';
-import { GoogleLogo } from './GoogleLogo';
+import { Box, Flex, IconButton, VStack } from '@chakra-ui/react';
+import {
+  FiMenu,
+  FiX,
+  FiUsers,
+  FiShoppingCart,
+  FiPackage,
+  FiUserCheck,
+} from 'react-icons/fi';
 import { NavItem } from './NavItem';
 
 interface NavItemConfig {
@@ -22,9 +28,19 @@ interface SideNavProps {
 
 const defaultNavItems: NavItemConfig[] = [
   { id: 'users', label: 'Users', icon: <FiUsers />, path: '/users' },
-  { id: 'transactions', label: 'Transactions', icon: <FiShoppingCart />, path: '/transactions' },
+  {
+    id: 'transactions',
+    label: 'Transactions',
+    icon: <FiShoppingCart />,
+    path: '/transactions',
+  },
   { id: 'products', label: 'Products', icon: <FiPackage />, path: '/products' },
-  { id: 'students', label: 'Students', icon: <FiUserCheck />, path: '/students' },
+  {
+    id: 'students',
+    label: 'Students',
+    icon: <FiUserCheck />,
+    path: '/students',
+  },
 ];
 
 export function SideNav({
@@ -52,7 +68,10 @@ export function SideNav({
     >
       <VStack align="stretch" p={4} gap={4}>
         {/* Toggle Button - Hidden on mobile */}
-        <Flex justify={isCollapsed ? 'center' : 'flex-end'} display={{ base: 'none', md: 'flex' }}>
+        <Flex
+          justify={isCollapsed ? 'center' : 'flex-end'}
+          display={{ base: 'none', md: 'flex' }}
+        >
           <IconButton
             aria-label="Toggle sidebar"
             size="sm"
@@ -62,7 +81,6 @@ export function SideNav({
             {isCollapsed ? <FiMenu /> : <FiX />}
           </IconButton>
         </Flex>
-
 
         {/* Navigation Items */}
         <VStack align="stretch" gap={1} mt={4}>
