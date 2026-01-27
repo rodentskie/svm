@@ -11,8 +11,23 @@ import {
   Button,
   HStack,
   VStack,
+  Input,
 } from '@chakra-ui/react';
 import { FiPlus, FiEdit2, FiTrash2 } from 'react-icons/fi';
+import { toaster,Toaster } from '@svm/components/toaster';
+import {
+  DialogRoot,
+  DialogBackdrop,
+  DialogContent,
+  DialogHeader,
+  DialogBody,
+  DialogFooter,
+  DialogTitle,
+  DialogCloseTrigger,
+} from '@svm/components/dialog';
+import { Field } from '@svm/components/field';
+import { NativeSelectRoot, NativeSelectField } from '@svm/components/native-select';
+import { PasswordInput } from '@svm/components/password-input';
 
 interface User {
   id: number;
@@ -25,10 +40,31 @@ interface User {
   updated_at: string;
 }
 
+interface CreateUserForm {
+  username: string;
+  password: string;
+  re_enter_password: string;
+  email: string;
+  name: string;
+  phone: string;
+  role: string;
+}
+
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState<CreateUserForm>({
+    username: '',
+    password: '',
+    re_enter_password: '',
+    email: '',
+    name: '',
+    phone: '',
+    role: 'operator',
+  });
 
   useEffect(() => {
     fetchUsers();
@@ -74,6 +110,94 @@ export default function UsersPage() {
     }
   };
 
+  const handleInputChange = (field: keyof CreateUserForm, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const resetForm = () => {
+    setFormData({
+      username: '',
+      password: '',
+      re_enter_password: '',
+      email: '',
+      name: '',
+      phone: '',
+      role: 'operator',
+    });
+  };
+
+  const handleCreateUser = async () => {
+    try {
+      // Validation
+      if (
+        !formData.username ||
+        !formData.password ||
+        !formData.re_enter_password ||
+        !formData.email ||
+        !formData.name ||
+        !formData.phone ||
+        !formData.role
+      ) {
+        toaster.create({
+          title: 'Validation Error',
+          description: 'All fields are required',
+          type: 'error',
+          duration: 3000,
+        });
+        return;
+      }
+
+      if (formData.password !== formData.re_enter_password) {
+        toaster.create({
+          title: 'Validation Error',
+          description: 'Passwords do not match',
+          type: 'error',
+          duration: 3000,
+        });
+        return;
+      }
+
+      setIsSubmitting(true);
+      const token = localStorage.getItem('token');
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/v1';
+
+      const response = await fetch(`${apiUrl}/users`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to create user');
+      }
+
+      toaster.create({
+        title: 'Success',
+        description: 'User created successfully',
+        type: 'success',
+        duration: 3000,
+      });
+
+      setIsDialogOpen(false);
+      resetForm();
+      fetchUsers(); // Refresh the list
+    } catch (err) {
+      toaster.create({
+        title: 'Error',
+        description: err instanceof Error ? err.message : 'Failed to create user',
+        type: 'error',
+        duration: 3000,
+      });
+      console.error('Error creating user:', err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <Box p={8} display="flex" justifyContent="center" alignItems="center" minH="400px">
@@ -98,15 +222,110 @@ export default function UsersPage() {
 
   return (
     <Box p={8}>
+      <Toaster />
+
       <VStack align="stretch" gap={6}>
         {/* Header */}
         <HStack justify="space-between">
           <Heading size="lg">Users Management</Heading>
-          <Button colorScheme="blue">
+          <Button colorScheme="blue" onClick={() => setIsDialogOpen(true)}>
             <FiPlus />
             Add New User
           </Button>
         </HStack>
+
+        {/* Create User Dialog */}
+        <DialogRoot open={isDialogOpen} onOpenChange={(e) => setIsDialogOpen(e.open)}>
+          <DialogBackdrop />
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Add New User</DialogTitle>
+            </DialogHeader>
+            <DialogCloseTrigger />
+            <DialogBody>
+              <VStack gap={4}>
+                <Field label="Username" required>
+                  <Input
+                    placeholder="Enter username"
+                    value={formData.username}
+                    onChange={(e) => handleInputChange('username', e.target.value)}
+                  />
+                </Field>
+
+                <Field label="Full Name" required>
+                  <Input
+                    placeholder="Enter full name"
+                    value={formData.name}
+                    onChange={(e) => handleInputChange('name', e.target.value)}
+                  />
+                </Field>
+
+                <Field label="Email" required>
+                  <Input
+                    type="email"
+                    placeholder="Enter email"
+                    value={formData.email}
+                    onChange={(e) => handleInputChange('email', e.target.value)}
+                  />
+                </Field>
+
+                <Field label="Phone" required>
+                  <Input
+                    placeholder="Enter phone number"
+                    value={formData.phone}
+                    onChange={(e) => handleInputChange('phone', e.target.value)}
+                  />
+                </Field>
+
+                <Field label="Role" required>
+                  <NativeSelectRoot>
+                    <NativeSelectField
+                      value={formData.role}
+                      onChange={(e) => handleInputChange('role', e.target.value)}
+                    >
+                      <option value="operator">Operator</option>
+                      <option value="admin">Admin</option>
+                    </NativeSelectField>
+                  </NativeSelectRoot>
+                </Field>
+
+                <Field label="Password" required>
+                  <PasswordInput
+                    placeholder="Enter password"
+                    value={formData.password}
+                    onChange={(e) => handleInputChange('password', e.target.value)}
+                  />
+                </Field>
+
+                <Field label="Re-enter Password" required>
+                  <PasswordInput
+                    placeholder="Re-enter password"
+                    value={formData.re_enter_password}
+                    onChange={(e) => handleInputChange('re_enter_password', e.target.value)}
+                  />
+                </Field>
+              </VStack>
+            </DialogBody>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsDialogOpen(false);
+                  resetForm();
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                colorScheme="blue"
+                onClick={handleCreateUser}
+                loading={isSubmitting}
+              >
+                Create User
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </DialogRoot>
 
         {/* Users Table */}
         <Box
