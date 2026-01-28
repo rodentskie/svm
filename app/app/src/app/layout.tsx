@@ -1,8 +1,8 @@
 import { Provider } from '@svm/components/provider';
 
 export const metadata = {
-  title: 'Practera Status',
-  description: 'Monitor the status of Practera and 3rd party services',
+  title: 'SVM',
+  description: 'Smart Vending Machine Management System',
 };
 
 export default function RootLayout(props: { children: React.ReactNode }) {
