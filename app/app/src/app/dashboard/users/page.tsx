@@ -56,8 +56,11 @@ export default function UsersPage() {
   const [error, setError] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [deletingUser, setDeletingUser] = useState<User | null>(null);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [formData, setFormData] = useState<CreateUserForm>({
     username: '',
     password: '',
@@ -233,6 +236,57 @@ export default function UsersPage() {
     }
   };
 
+  const handleDeleteClick = (user: User) => {
+    setDeletingUser(user);
+    setDeleteConfirmText('');
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleDeleteUser = async () => {
+    if (!deletingUser) return;
+
+    try {
+      setIsSubmitting(true);
+      const token = localStorage.getItem('token');
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/v1';
+
+      const response = await fetch(`${apiUrl}/users/${deletingUser.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to delete user');
+      }
+
+      toaster.create({
+        title: 'Success',
+        description: 'User deleted successfully',
+        type: 'success',
+        duration: 3000,
+      });
+      
+      setIsDeleteDialogOpen(false);
+      setDeletingUser(null);
+      setDeleteConfirmText('');
+      fetchUsers(); // Refresh the list
+    } catch (err) {
+      toaster.create({
+        title: 'Error',
+        description: err instanceof Error ? err.message : 'Failed to delete user',
+        type: 'error',
+        duration: 3000,
+      });
+      console.error('Error deleting user:', err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <>
@@ -364,6 +418,57 @@ export default function UsersPage() {
                 loading={isSubmitting}
               >
                 Create User
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </DialogRoot>
+
+        {/* Delete Confirmation Dialog */}
+        <DialogRoot open={isDeleteDialogOpen} onOpenChange={(e) => setIsDeleteDialogOpen(e.open)}>
+          <DialogBackdrop />
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Delete User</DialogTitle>
+            </DialogHeader>
+            <DialogCloseTrigger />
+            <DialogBody>
+              <VStack gap={4} align="stretch">
+                <Text>
+                  Are you sure you want to delete user <strong>{deletingUser?.username}</strong>?
+                </Text>
+                <Text color="red.600" _dark={{ color: 'red.400' }} fontSize="sm">
+                  This action cannot be undone.
+                </Text>
+                <Field 
+                  label='Type "delete" to confirm' 
+                  required
+                >
+                  <Input
+                    placeholder='Type "delete" to confirm'
+                    value={deleteConfirmText}
+                    onChange={(e) => setDeleteConfirmText(e.target.value)}
+                  />
+                </Field>
+              </VStack>
+            </DialogBody>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsDeleteDialogOpen(false);
+                  setDeletingUser(null);
+                  setDeleteConfirmText('');
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                colorScheme="red"
+                onClick={handleDeleteUser}
+                loading={isSubmitting}
+                disabled={deleteConfirmText !== 'delete'}
+              >
+                Delete User
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -518,6 +623,7 @@ export default function UsersPage() {
                           size="sm"
                           variant="outline"
                           colorScheme="red"
+                          onClick={() => handleDeleteClick(user)}
                         >
                           <FiTrash2 />
                           Delete
