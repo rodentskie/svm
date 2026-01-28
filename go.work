@@ -11,4 +11,5 @@ use (
 	./library/go/password
 	./library/go/responses
 	./library/go/structs
+	./library/go/validate
 )

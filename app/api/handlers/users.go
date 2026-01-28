@@ -8,6 +8,7 @@ import (
 	"library/go/password"
 	"library/go/responses"
 	"library/go/structs"
+	"library/go/validate"
 	"net/http"
 	"strconv"
 
@@ -37,6 +38,18 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	// Validate passwords match
 	if req.Password != req.ReEnterPassword {
 		responses.ErrorResponse(w, http.StatusBadRequest, "Passwords do not match")
+		return
+	}
+
+	// check if valid email
+	if err := validate.ValidateEmail(req.Email); err != nil {
+		responses.ErrorResponse(w, http.StatusBadRequest, "Invalid email format")
+		return
+	}
+
+	// check if valid phone number
+	if err := validate.PhPhoneValidate(req.Phone); err != nil {
+		responses.ErrorResponse(w, http.StatusBadRequest, "Invalid phone number format")
 		return
 	}
 
@@ -124,6 +137,18 @@ func UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	// Validate passwords match
 	if req.Password != req.ReEnterPassword {
 		responses.ErrorResponse(w, http.StatusBadRequest, "Passwords do not match")
+		return
+	}
+
+	// check if valid email
+	if err := validate.ValidateEmail(req.Email); err != nil {
+		responses.ErrorResponse(w, http.StatusBadRequest, "Invalid email format")
+		return
+	}
+
+	// check if valid phone number
+	if err := validate.PhPhoneValidate(req.Phone); err != nil {
+		responses.ErrorResponse(w, http.StatusBadRequest, "Invalid phone number format")
 		return
 	}
 
