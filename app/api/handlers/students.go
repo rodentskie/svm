@@ -105,10 +105,12 @@ func GetAllStudents(w http.ResponseWriter, r *http.Request) {
 	var studentResponses []structs.StudentResponse
 	for _, student := range students {
 		studentResponses = append(studentResponses, structs.StudentResponse{
-			ID:   student.ID,
-			Name: student.Name,
-			RFID: student.RFID,
-			Load: student.Load,
+			ID:        student.ID,
+			Name:      student.Name,
+			RFID:      student.RFID,
+			Load:      student.Load,
+			CreatedAt: student.CreatedAt.Format("2006-01-02 15:04:05"),
+			UpdatedAt: student.UpdatedAt.Format("2006-01-02 15:04:05"),
 		})
 	}
 

@@ -17,8 +17,10 @@ type StudentLoadRequest struct {
 }
 
 type StudentResponse struct {
-	ID   uint    `json:"id"`
-	Name string  `json:"name"`
-	RFID string  `json:"rfid"`
-	Load float64 `json:"load"`
+	ID        uint    `json:"id"`
+	Name      string  `json:"name"`
+	RFID      string  `json:"rfid"`
+	Load      float64 `json:"load"`
+	CreatedAt string  `json:"created_at"`
+	UpdatedAt string  `json:"updated_at"`
 }
