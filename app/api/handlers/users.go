@@ -140,6 +140,18 @@ func UpdateProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// check if valid email
+	if err := validate.ValidateEmail(req.Email); err != nil {
+		responses.ErrorResponse(w, http.StatusBadRequest, "Invalid email format")
+		return
+	}
+
+	// check if valid phone number
+	if err := validate.PhPhoneValidate(req.Phone); err != nil {
+		responses.ErrorResponse(w, http.StatusBadRequest, "Invalid phone number format")
+		return
+	}
+
 	// Validate role
 	validRoles := map[string]bool{"admin": true, "operator": true}
 	if !validRoles[req.Role] {

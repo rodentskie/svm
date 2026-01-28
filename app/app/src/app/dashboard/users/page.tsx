@@ -55,7 +55,9 @@ export default function UsersPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
   const [formData, setFormData] = useState<CreateUserForm>({
     username: '',
     password: '',
@@ -171,31 +173,98 @@ export default function UsersPage() {
     }
   };
 
+  const handleEditClick = (user: User) => {
+    setEditingUser(user);
+    setFormData({
+      username: user.username,
+      password: '',
+      re_enter_password: '',
+      email: user.email,
+      name: user.name,
+      phone: user.phone,
+      role: user.role,
+    });
+    setIsEditDialogOpen(true);
+  };
+
+  const handleUpdateUser = async () => {
+    if (!editingUser) return;
+
+    try {
+      setIsSubmitting(true);
+      const token = localStorage.getItem('token');
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/v1';
+
+      const response = await fetch(`${apiUrl}/users/${editingUser.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update user');
+      }
+
+      toaster.create({
+        title: 'Success',
+        description: 'User updated successfully',
+        type: 'success',
+        duration: 3000,
+      });
+      
+      setIsEditDialogOpen(false);
+      setEditingUser(null);
+      resetForm();
+      fetchUsers(); // Refresh the list
+    } catch (err) {
+      toaster.create({
+        title: 'Error',
+        description: err instanceof Error ? err.message : 'Failed to update user',
+        type: 'error',
+        duration: 3000,
+      });
+      console.error('Error updating user:', err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   if (isLoading) {
     return (
-      <Box p={8} display="flex" justifyContent="center" alignItems="center" minH="400px">
-        <VStack gap={4}>
-          <Spinner size="xl" />
-          <Text>Loading users...</Text>
-        </VStack>
-      </Box>
+      <>
+        <Toaster />
+        <Box p={8} display="flex" justifyContent="center" alignItems="center" minH="400px">
+          <VStack gap={4}>
+            <Spinner size="xl" />
+            <Text>Loading users...</Text>
+          </VStack>
+        </Box>
+      </>
     );
   }
 
   if (error) {
     return (
-      <Box p={8}>
-        <Text color="red.500">Error: {error}</Text>
-        <Button mt={4} onClick={fetchUsers}>
-          Retry
-        </Button>
-      </Box>
+      <>
+        <Toaster />
+        <Box p={8}>
+          <Text color="red.500">Error: {error}</Text>
+          <Button mt={4} onClick={fetchUsers}>
+            Retry
+          </Button>
+        </Box>
+      </>
     );
   }
 
   return (
-    <Box p={8}>
+    <>
       <Toaster />
+      <Box p={8}>
 
       <VStack align="stretch" gap={6}>
         {/* Header */}
@@ -300,6 +369,100 @@ export default function UsersPage() {
           </DialogContent>
         </DialogRoot>
 
+        {/* Edit User Dialog */}
+        <DialogRoot open={isEditDialogOpen} onOpenChange={(e) => setIsEditDialogOpen(e.open)}>
+          <DialogBackdrop />
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit User</DialogTitle>
+            </DialogHeader>
+            <DialogCloseTrigger />
+            <DialogBody>
+              <VStack gap={4}>
+                <Field label="Username" required>
+                  <Input
+                    placeholder="Enter username"
+                    value={formData.username}
+                    onChange={(e) => handleInputChange('username', e.target.value)}
+                  />
+                </Field>
+
+                <Field label="Full Name" required>
+                  <Input
+                    placeholder="Enter full name"
+                    value={formData.name}
+                    onChange={(e) => handleInputChange('name', e.target.value)}
+                  />
+                </Field>
+
+                <Field label="Email" required>
+                  <Input
+                    type="email"
+                    placeholder="Enter email"
+                    value={formData.email}
+                    onChange={(e) => handleInputChange('email', e.target.value)}
+                  />
+                </Field>
+
+                <Field label="Phone" required>
+                  <Input
+                    placeholder="Enter phone number"
+                    value={formData.phone}
+                    onChange={(e) => handleInputChange('phone', e.target.value)}
+                  />
+                </Field>
+
+                <Field label="Role" required>
+                  <NativeSelectRoot>
+                    <NativeSelectField
+                      value={formData.role}
+                      onChange={(e) => handleInputChange('role', e.target.value)}
+                    >
+                      <option value="operator">Operator</option>
+                      <option value="admin">Admin</option>
+                    </NativeSelectField>
+                  </NativeSelectRoot>
+                </Field>
+
+                <Field label="Password" required>
+                  <PasswordInput
+                    placeholder="Enter new password"
+                    value={formData.password}
+                    onChange={(e) => handleInputChange('password', e.target.value)}
+                  />
+                </Field>
+
+                <Field label="Re-enter Password" required>
+                  <PasswordInput
+                    placeholder="Re-enter new password"
+                    value={formData.re_enter_password}
+                    onChange={(e) => handleInputChange('re_enter_password', e.target.value)}
+                  />
+                </Field>
+              </VStack>
+            </DialogBody>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsEditDialogOpen(false);
+                  setEditingUser(null);
+                  resetForm();
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                colorScheme="blue"
+                onClick={handleUpdateUser}
+                loading={isSubmitting}
+              >
+                Update User
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </DialogRoot>
+
         {/* Users Table */}
         <Box
           borderWidth="1px"
@@ -346,6 +509,7 @@ export default function UsersPage() {
                           size="sm"
                           variant="outline"
                           colorScheme="blue"
+                          onClick={() => handleEditClick(user)}
                         >
                           <FiEdit2 />
                           Edit
@@ -373,5 +537,6 @@ export default function UsersPage() {
         </Text>
       </VStack>
     </Box>
+    </>
   );
 }
