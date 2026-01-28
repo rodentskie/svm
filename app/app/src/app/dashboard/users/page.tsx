@@ -128,35 +128,6 @@ export default function UsersPage() {
 
   const handleCreateUser = async () => {
     try {
-      // Validation
-      if (
-        !formData.username ||
-        !formData.password ||
-        !formData.re_enter_password ||
-        !formData.email ||
-        !formData.name ||
-        !formData.phone ||
-        !formData.role
-      ) {
-        toaster.create({
-          title: 'Validation Error',
-          description: 'All fields are required',
-          type: 'error',
-          duration: 3000,
-        });
-        return;
-      }
-
-      if (formData.password !== formData.re_enter_password) {
-        toaster.create({
-          title: 'Validation Error',
-          description: 'Passwords do not match',
-          type: 'error',
-          duration: 3000,
-        });
-        return;
-      }
-
       setIsSubmitting(true);
       const token = localStorage.getItem('token');
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/v1';
@@ -170,9 +141,11 @@ export default function UsersPage() {
         body: JSON.stringify(formData),
       });
 
+      // data validation on api
+      // display error message from api
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to create user');
+        throw new Error(errorData.error || 'Failed to create user');
       }
 
       toaster.create({
@@ -343,8 +316,7 @@ export default function UsersPage() {
                 <Table.ColumnHeader>Email</Table.ColumnHeader>
                 <Table.ColumnHeader>Phone</Table.ColumnHeader>
                 <Table.ColumnHeader>Role</Table.ColumnHeader>
-                <Table.ColumnHeader>Created At</Table.ColumnHeader>
-                <Table.ColumnHeader>Updated At</Table.ColumnHeader>
+                <Table.ColumnHeader>Last Updated</Table.ColumnHeader>
                 <Table.ColumnHeader textAlign="center">Actions</Table.ColumnHeader>
               </Table.Row>
             </Table.Header>
@@ -367,7 +339,6 @@ export default function UsersPage() {
                         {user.role.toUpperCase()}
                       </Badge>
                     </Table.Cell>
-                    <Table.Cell fontSize="sm">{user.created_at}</Table.Cell>
                     <Table.Cell fontSize="sm">{user.updated_at}</Table.Cell>
                     <Table.Cell>
                       <HStack gap={2} justify="center">
