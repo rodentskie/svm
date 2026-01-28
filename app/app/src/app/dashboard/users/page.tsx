@@ -28,6 +28,7 @@ import {
 import { Field } from '@svm/components/field';
 import { NativeSelectRoot, NativeSelectField } from '@svm/components/native-select';
 import { PasswordInput } from '@svm/components/password-input';
+import { DeleteConfirmDialog } from '../../../components/DeleteConfirmDialog';
 
 interface User {
   id: number;
@@ -424,55 +425,20 @@ export default function UsersPage() {
         </DialogRoot>
 
         {/* Delete Confirmation Dialog */}
-        <DialogRoot open={isDeleteDialogOpen} onOpenChange={(e) => setIsDeleteDialogOpen(e.open)}>
-          <DialogBackdrop />
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Delete User</DialogTitle>
-            </DialogHeader>
-            <DialogCloseTrigger />
-            <DialogBody>
-              <VStack gap={4} align="stretch">
-                <Text>
-                  Are you sure you want to delete user <strong>{deletingUser?.username}</strong>?
-                </Text>
-                <Text color="red.600" _dark={{ color: 'red.400' }} fontSize="sm">
-                  This action cannot be undone.
-                </Text>
-                <Field 
-                  label='Type "delete" to confirm' 
-                  required
-                >
-                  <Input
-                    placeholder='Type "delete" to confirm'
-                    value={deleteConfirmText}
-                    onChange={(e) => setDeleteConfirmText(e.target.value)}
-                  />
-                </Field>
-              </VStack>
-            </DialogBody>
-            <DialogFooter>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setIsDeleteDialogOpen(false);
-                  setDeletingUser(null);
-                  setDeleteConfirmText('');
-                }}
-              >
-                Cancel
-              </Button>
-              <Button
-                colorScheme="red"
-                onClick={handleDeleteUser}
-                loading={isSubmitting}
-                disabled={deleteConfirmText !== 'delete'}
-              >
-                Delete User
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </DialogRoot>
+        <DeleteConfirmDialog
+          isOpen={isDeleteDialogOpen}
+          onClose={() => {
+            setIsDeleteDialogOpen(false);
+            setDeletingUser(null);
+            setDeleteConfirmText('');
+          }}
+          onConfirm={handleDeleteUser}
+          isSubmitting={isSubmitting}
+          itemName={deletingUser?.username || ''}
+          itemType="User"
+          confirmText={deleteConfirmText}
+          onConfirmTextChange={setDeleteConfirmText}
+        />
 
         {/* Edit User Dialog */}
         <DialogRoot open={isEditDialogOpen} onOpenChange={(e) => setIsEditDialogOpen(e.open)}>
