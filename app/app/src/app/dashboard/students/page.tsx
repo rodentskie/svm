@@ -563,7 +563,6 @@ export default function StudentsPage() {
                   <Table.ColumnHeader>Name</Table.ColumnHeader>
                   <Table.ColumnHeader>RFID</Table.ColumnHeader>
                   <Table.ColumnHeader>Load</Table.ColumnHeader>
-                  <Table.ColumnHeader>Created At</Table.ColumnHeader>
                   <Table.ColumnHeader>Last Updated</Table.ColumnHeader>
                   <Table.ColumnHeader textAlign="center">Actions</Table.ColumnHeader>
                 </Table.Row>
@@ -581,7 +580,6 @@ export default function StudentsPage() {
                       <Table.Cell fontWeight="medium">{student.name}</Table.Cell>
                       <Table.Cell>{student.rfid}</Table.Cell>
                       <Table.Cell>₱{student.load.toFixed(2)}</Table.Cell>
-                      <Table.Cell fontSize="sm">{student.created_at}</Table.Cell>
                       <Table.Cell fontSize="sm">{student.updated_at}</Table.Cell>
                       <Table.Cell>
                         <HStack gap={2} justify="center">
