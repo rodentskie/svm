@@ -29,7 +29,7 @@ func GetAllProducts(w http.ResponseWriter, r *http.Request) {
 
 	// Fetch all products
 	var products []models.Product
-	if err := db.Find(&products).Error; err != nil {
+	if err := db.Preload("Category").Find(&products).Error; err != nil {
 		productLog.Error("failed to fetch products", zap.Error(err))
 		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to fetch products")
 		return
@@ -49,6 +49,10 @@ func GetAllProducts(w http.ResponseWriter, r *http.Request) {
 			"is_low_stock":  product.IsLowStock(),
 			"created_at":    product.CreatedAt.Format("2006-01-02 15:04:05"),
 			"updated_at":    product.UpdatedAt.Format("2006-01-02 15:04:05"),
+			"category": map[string]any{
+				"id":   product.Category.ID,
+				"name": product.Category.Name,
+			},
 		})
 	}
 
