@@ -19,6 +19,8 @@ var productLog = logger.NewLogger("products-handler")
 func GetAllProducts(w http.ResponseWriter, r *http.Request) {
 	defer productLog.Sync()
 
+	category_id := r.URL.Query().Get("category_id")
+
 	// Get database connection
 	db, err := database.GetDB()
 	if err != nil {
@@ -27,16 +29,29 @@ func GetAllProducts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Fetch all products
+	// Build query
+	query := db.Preload("Category")
+
+	// Filter by category_id if provided
+	if category_id != "" {
+		categoryID, err := strconv.ParseUint(category_id, 10, 32)
+		if err != nil {
+			responses.ErrorResponse(w, http.StatusBadRequest, "Invalid category ID")
+			return
+		}
+		query = query.Where("category_id = ?", uint(categoryID))
+	}
+
+	// Fetch products
 	var products []models.Product
-	if err := db.Preload("Category").Find(&products).Error; err != nil {
+	if err := query.Find(&products).Error; err != nil {
 		productLog.Error("failed to fetch products", zap.Error(err))
 		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to fetch products")
 		return
 	}
 
 	// Build response
-	var productsResponse []map[string]interface{}
+	var productsResponse []map[string]interface{} = make([]map[string]interface{}, 0)
 	for _, product := range products {
 		productsResponse = append(productsResponse, map[string]interface{}{
 			"id":            product.ID,

@@ -68,11 +68,6 @@ export function ProductGrid({ products, onAddToCart, isLoading = false }: Produc
                 <Text fontSize="lg" fontWeight="bold" lineHeight="tight">
                   {product.name}
                 </Text>
-                {product.description && (
-                  <Text fontSize="sm" color="fg.muted" mt={1} lineClamp={2}>
-                    {product.description}
-                  </Text>
-                )}
               </Box>
 
               <Box>
@@ -81,10 +76,14 @@ export function ProductGrid({ products, onAddToCart, isLoading = false }: Produc
                 </Text>
                 <Tag
                   size="sm"
-                  colorPalette={product.stock > 10 ? 'green' : product.stock > 0 ? 'orange' : 'red'}
+                  colorPalette={
+                    product.quantity === 0 ? 'red' : product.is_low_stock ? 'orange' : 'green'
+                  }
                   mt={2}
                 >
-                  {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
+                  {product.quantity === 0
+                    ? 'Out of stock'
+                    : `${product.quantity} in stock${product.is_low_stock ? ' (Low)' : ''}`}
                 </Tag>
               </Box>
 
@@ -92,10 +91,10 @@ export function ProductGrid({ products, onAddToCart, isLoading = false }: Produc
                 colorPalette="blue"
                 size="md"
                 width="100%"
-                disabled={product.stock === 0}
+                disabled={product.quantity === 0}
                 onClick={() => onAddToCart?.(product)}
               >
-                {product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
+                {product.quantity === 0 ? 'Out of Stock' : 'Buy'}
               </Button>
             </Stack>
           </Card.Body>

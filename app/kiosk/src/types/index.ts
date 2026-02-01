@@ -8,11 +8,13 @@ export interface Category {
 export interface Product {
   id: number;
   name: string;
-  description?: string;
+  code: string;
   price: number;
-  stock: number;
-  category_id: number;
-  category?: Category;
+  quantity: number;
+  location: string;
+  min_threshold: number;
+  is_low_stock: boolean;
+  category: Category;
   created_at: string;
   updated_at: string;
 }
