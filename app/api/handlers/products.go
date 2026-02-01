@@ -287,3 +287,37 @@ func CreateProduct(w http.ResponseWriter, r *http.Request) {
 
 	responses.CreatedResponse(w, productResponse)
 }
+
+func GetAllProductCategories(w http.ResponseWriter, r *http.Request) {
+	defer productLog.Sync()
+
+	// Get database connection
+	db, err := database.GetDB()
+	if err != nil {
+		productLog.Error("failed to get database connection", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Database connection error")
+		return
+	}
+
+	// Fetch all products
+	var categories []models.ProductCategories
+	if err := db.Find(&categories).Error; err != nil {
+		productLog.Error("failed to fetch products", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to fetch products")
+		return
+	}
+
+	// Build response
+	var res []map[string]interface{}
+	for _, c := range categories {
+		res = append(res, map[string]interface{}{
+			"id":         c.ID,
+			"name":       c.Name,
+			"created_at": c.CreatedAt.Format("2006-01-02 15:04:05"),
+			"updated_at": c.UpdatedAt.Format("2006-01-02 15:04:05"),
+		})
+	}
+
+	productLog.Info("fetched products successfully", zap.Int("count", len(res)))
+	responses.SuccessResponse(w, res)
+}
