@@ -3,7 +3,6 @@ package handlers
 import (
 	"encoding/base64"
 	"encoding/json"
-	"fmt"
 	"io"
 	"library/go/env"
 	"library/go/logger"
@@ -72,8 +71,26 @@ func PayMongoCreatePaymentMethod(w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		payMongoLog.Error("failed to read response body", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to read response")
 		return
 	}
-	fmt.Println(string(body))
+
+	// Parse PayMongo response
+	var paymongoResponse struct {
+		Data struct {
+			ID string `json:"id"`
+		} `json:"data"`
+	}
+
+	if err := json.Unmarshal(body, &paymongoResponse); err != nil {
+		payMongoLog.Error("failed to parse paymongo response", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to parse payment provider response")
+		return
+	}
+
+	// Return the payment method ID
+	responses.SuccessResponse(w, map[string]string{
+		"payment_method_id": paymongoResponse.Data.ID,
+	})
 
 }
