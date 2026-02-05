@@ -129,4 +129,10 @@ func MainRoutes(prefix string, mux *http.ServeMux) {
 		fmt.Sprintf("DELETE /%s/students/{studentId}", prefix),
 		middleware.AuthMiddleware(db)(http.HandlerFunc(handlers.DeleteStudent)),
 	)
+
+	// payment methods
+	mux.Handle(
+		fmt.Sprintf("GET /%s/payment_methods", prefix),
+		http.HandlerFunc(handlers.GetAllPaymentMethods),
+	)
 }
