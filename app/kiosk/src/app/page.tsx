@@ -5,8 +5,9 @@ import { Box, Flex, Container, Text, Stack } from '@chakra-ui/react';
 import { EmptyState } from '@svm/components/empty-state';
 import { CategorySidebar } from '../components/CategorySidebar';
 import { ProductGrid } from '../components/ProductGrid';
+import { PaymentMethodDialog } from '../components/PaymentMethodDialog';
 import { fetchCategories, fetchProductsByCategory } from '../lib/api';
-import { Category, Product } from '../types';
+import { Category, Product, PaymentMethod } from '../types';
 
 export default function MainPage() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -15,6 +16,8 @@ export default function MainPage() {
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
   const [isLoadingProducts, setIsLoadingProducts] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   // Fetch categories on mount
   useEffect(() => {
@@ -66,9 +69,15 @@ export default function MainPage() {
     setSelectedCategoryId(categoryId);
   };
 
-  const handleAddToCart = (product: Product) => {
-    // TODO: Implement cart functionality
-    console.log('Add to cart:', product);
+  const handleBuy = (product: Product) => {
+    setSelectedProduct(product);
+    setIsPaymentDialogOpen(true);
+  };
+
+  const handlePaymentSelect = (paymentMethod: PaymentMethod, product: Product) => {
+    console.log('Payment method selected:', paymentMethod.name);
+    console.log('Product:', product.name);
+    console.log('Price:', product.price);
   };
 
   if (error && categories.length === 0) {
@@ -121,13 +130,21 @@ export default function MainPage() {
             ) : (
               <ProductGrid
                 products={products}
-                onAddToCart={handleAddToCart}
+                onAddToCart={handleBuy}
                 isLoading={isLoadingProducts}
               />
             )}
           </Stack>
         </Container>
       </Box>
+
+      {/* Payment Method Dialog */}
+      <PaymentMethodDialog
+        open={isPaymentDialogOpen}
+        onClose={() => setIsPaymentDialogOpen(false)}
+        product={selectedProduct}
+        onPaymentSelect={handlePaymentSelect}
+      />
     </Flex>
   );
 }

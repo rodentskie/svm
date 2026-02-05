@@ -15,3 +15,16 @@ export async function fetchProductsByCategory(categoryId: number) {
   }
   return response.json();
 }
+
+export async function fetchPaymentMethods(token?: string) {
+  const headers: HeadersInit = {};
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+  
+  const response = await fetch(`${API_BASE_URL}/payment_methods`, { headers });
+  if (!response.ok) {
+    throw new Error('Failed to fetch payment methods');
+  }
+  return response.json();
+}
