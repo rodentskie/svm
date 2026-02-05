@@ -28,3 +28,11 @@ export async function fetchPaymentMethods(token?: string) {
   }
   return response.json();
 }
+
+export async function fetchProductById(productId: number | string) {
+  const response = await fetch(`${API_BASE_URL}/products/${productId}`);
+  if (!response.ok) {
+    throw new Error('Failed to fetch product');
+  }
+  return response.json();
+}

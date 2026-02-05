@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Box, Flex, Container, Text, Stack } from '@chakra-ui/react';
 import { EmptyState } from '@svm/components/empty-state';
 import { CategorySidebar } from '../components/CategorySidebar';
@@ -10,6 +11,7 @@ import { fetchCategories, fetchProductsByCategory } from '../lib/api';
 import { Category, Product, PaymentMethod } from '../types';
 
 export default function MainPage() {
+  const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
@@ -75,9 +77,15 @@ export default function MainPage() {
   };
 
   const handlePaymentSelect = (paymentMethod: PaymentMethod, product: Product) => {
-    console.log('Payment method selected:', paymentMethod.name);
-    console.log('Product:', product.name);
-    console.log('Price:', product.price);
+    const methodName = paymentMethod.name.toLowerCase();
+    
+    if (methodName.includes('wallet') || methodName.includes('e-wallet')) {
+      router.push(`/checkout/e-wallet/${product.id}`);
+    } else {
+      console.log('Payment method selected:', paymentMethod.name);
+      console.log('Product:', product.name);
+      console.log('Price:', product.price);
+    }
   };
 
   if (error && categories.length === 0) {

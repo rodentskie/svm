@@ -68,7 +68,7 @@ func MainRoutes(prefix string, mux *http.ServeMux) {
 
 	mux.Handle(
 		fmt.Sprintf("GET /%s/products/{productId}", prefix),
-		middleware.AuthMiddleware(db)(http.HandlerFunc(handlers.GetSingleProduct)),
+		http.HandlerFunc(handlers.GetSingleProduct),
 	)
 
 	mux.Handle(
