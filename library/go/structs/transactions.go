@@ -12,3 +12,7 @@ type CreateTransactionAdjustmentRequest struct {
 	Reason   string `json:"reason" validate:"required"`
 	Notes    string `json:"notes"`
 }
+
+type CreatePaymentMethod struct {
+	Method string `json:"method" validate:"required,oneof=gcash paymaya"`
+}

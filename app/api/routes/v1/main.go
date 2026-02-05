@@ -135,4 +135,10 @@ func MainRoutes(prefix string, mux *http.ServeMux) {
 		fmt.Sprintf("GET /%s/payment_methods", prefix),
 		http.HandlerFunc(handlers.GetAllPaymentMethods),
 	)
+
+	// paymongo integration
+	mux.Handle(
+		fmt.Sprintf("POST /%s/payment_methods", prefix),
+		http.HandlerFunc(handlers.PayMongoCreatePaymentMethod),
+	)
 }
