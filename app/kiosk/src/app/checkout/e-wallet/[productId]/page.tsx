@@ -3,7 +3,17 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Box, Container, Stack, Text, Card, Button, Flex } from '@chakra-ui/react';
-import { FaArrowLeft } from 'react-icons/fa';
+import { FaArrowLeft, FaWallet } from 'react-icons/fa';
+import {
+  DialogRoot,
+  DialogContent,
+  DialogHeader,
+  DialogBody,
+  DialogFooter,
+  DialogTitle,
+  DialogDescription,
+  DialogCloseTrigger,
+} from '@svm/components/dialog';
 import { EmptyState } from '@svm/components/empty-state';
 import { Skeleton } from '@svm/components/skeleton';
 import { Tag } from '@svm/components/tag';
@@ -18,6 +28,7 @@ export default function EWalletCheckoutPage() {
   const [product, setProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isWalletDialogOpen, setIsWalletDialogOpen] = useState(false);
 
   useEffect(() => {
     async function loadProduct() {
@@ -40,6 +51,17 @@ export default function EWalletCheckoutPage() {
 
   const handleBack = () => {
     router.push('/');
+  };
+
+  const handleProceedToPayment = () => {
+    setIsWalletDialogOpen(true);
+  };
+
+  const handleWalletSelect = (walletType: 'gcash' | 'paymaya') => {
+    console.log('Selected wallet:', walletType);
+    console.log('Product:', product);
+    // TODO: Proceed with payment
+    setIsWalletDialogOpen(false);
   };
 
   if (error) {
@@ -195,12 +217,83 @@ export default function EWalletCheckoutPage() {
               size="lg"
               flex={2}
               disabled={product.quantity === 0}
+              onClick={handleProceedToPayment}
             >
               Proceed to Payment
             </Button>
           </Flex>
         </Stack>
       </Container>
+
+      {/* E-Wallet Selection Dialog */}
+      <DialogRoot open={isWalletDialogOpen} onOpenChange={(e) => !e.open && setIsWalletDialogOpen(false)} size="md">
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Select E-Wallet</DialogTitle>
+            <DialogDescription>
+              Choose your preferred e-wallet to complete the payment
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogCloseTrigger />
+
+          <DialogBody>
+            <Stack gap={3}>
+              <Button
+                size="xl"
+                variant="outline"
+                colorPalette="blue"
+                onClick={() => handleWalletSelect('gcash')}
+                height="auto"
+                py={6}
+              >
+                <Box display="flex" alignItems="center" gap={4} width="100%">
+                  <Box color="blue.600">
+                    <FaWallet size={24} />
+                  </Box>
+                  <Box flex={1} textAlign="left">
+                    <Text fontSize="lg" fontWeight="bold">
+                      GCash
+                    </Text>
+                    <Text fontSize="sm" color="fg.muted">
+                      Pay using your GCash wallet
+                    </Text>
+                  </Box>
+                </Box>
+              </Button>
+
+              <Button
+                size="xl"
+                variant="outline"
+                colorPalette="green"
+                onClick={() => handleWalletSelect('paymaya')}
+                height="auto"
+                py={6}
+              >
+                <Box display="flex" alignItems="center" gap={4} width="100%">
+                  <Box color="green.600">
+                    <FaWallet size={24} />
+                  </Box>
+                  <Box flex={1} textAlign="left">
+                    <Text fontSize="lg" fontWeight="bold">
+                      PayMaya
+                    </Text>
+                    <Text fontSize="sm" color="fg.muted">
+                      Pay using your PayMaya wallet
+                    </Text>
+                  </Box>
+                </Box>
+              </Button>
+            </Stack>
+          </DialogBody>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsWalletDialogOpen(false)}>
+              Cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </DialogRoot>
     </Box>
   );
 }
