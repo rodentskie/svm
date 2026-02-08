@@ -36,3 +36,64 @@ export async function fetchProductById(productId: number | string) {
   }
   return response.json();
 }
+
+export async function createPaymentMethod(method: string) {
+  const response = await fetch(`${API_BASE_URL}/payment_methods`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ method: method.toLowerCase() }),
+  });
+  if (!response.ok) {
+    throw new Error('Failed to create payment method');
+  }
+  return response.json();
+}
+
+export async function createPaymentIntent(amount: number, paymentMethodsAllowed: string[]) {
+  const response = await fetch(`${API_BASE_URL}/payment_intents`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      amount,
+      payment_methods_allowed: paymentMethodsAllowed,
+    }),
+  });
+  if (!response.ok) {
+    throw new Error('Failed to create payment intent');
+  }
+  return response.json();
+}
+
+export async function attachPaymentIntent(
+  paymentMethodId: string,
+  paymentIntentId: string,
+  returnUrl: string
+) {
+  const response = await fetch(`${API_BASE_URL}/payment_intents/attach`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      payment_method_id: paymentMethodId,
+      payment_intent_id: paymentIntentId,
+      return_url: returnUrl,
+    }),
+  });
+  if (!response.ok) {
+    throw new Error('Failed to attach payment intent');
+  }
+  return response.json();
+}
+
+export async function getPaymentIntentStatus(paymentIntentId: string) {
+  const response = await fetch(`${API_BASE_URL}/payment_intents/${paymentIntentId}`);
+  if (!response.ok) {
+    throw new Error('Failed to get payment intent status');
+  }
+  return response.json();
+}

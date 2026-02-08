@@ -273,18 +273,12 @@ func PayMongoAttachPaymentIntent(w http.ResponseWriter, r *http.Request) {
 func PayMongoGetPaymentIntent(w http.ResponseWriter, r *http.Request) {
 	defer payMongoLog.Sync()
 
-	// Parse request body
-	var reqBody structs.GetPaymentIntent
-	if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
-		payMongoLog.Error("failed to decode request body", zap.Error(err))
-		responses.ErrorResponse(w, http.StatusBadRequest, "Invalid request body")
-		return
-	}
+	paymentIntentId := r.PathValue("paymentIntentId")
 
 	pk := env.GetEnv("PAYMONGO_SECRET_KEY", "pk_test_zzxxx")
 	encodedPK := base64.StdEncoding.EncodeToString([]byte(pk))
 
-	url := "https://api.paymongo.com/v1/payment_intents/" + reqBody.PaymentIntentID
+	url := "https://api.paymongo.com/v1/payment_intents/" + paymentIntentId
 	method := "GET"
 
 	client := &http.Client{}

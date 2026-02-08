@@ -17,8 +17,15 @@ import {
 import { EmptyState } from '@svm/components/empty-state';
 import { Skeleton } from '@svm/components/skeleton';
 import { Tag } from '@svm/components/tag';
+import { QrCode } from '@svm/components/qr-code';
 import { Product } from '../../../../types';
-import { fetchProductById } from '../../../../lib/api';
+import { 
+  fetchProductById, 
+  createPaymentMethod, 
+  createPaymentIntent, 
+  attachPaymentIntent,
+  getPaymentIntentStatus 
+} from '../../../../lib/api';
 
 export default function EWalletCheckoutPage() {
   const params = useParams();
@@ -29,6 +36,12 @@ export default function EWalletCheckoutPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isWalletDialogOpen, setIsWalletDialogOpen] = useState(false);
+  const [isQrDialogOpen, setIsQrDialogOpen] = useState(false);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
+  const [selectedWallet, setSelectedWallet] = useState<string>('');
+  const [paymentIntentId, setPaymentIntentId] = useState<string | null>(null);
+  const [returnUrl, setReturnUrl] = useState<string>('');
 
   useEffect(() => {
     async function loadProduct() {
@@ -49,6 +62,37 @@ export default function EWalletCheckoutPage() {
     }
   }, [productId]);
 
+  // Poll payment intent status every 7 seconds while QR dialog is open
+  useEffect(() => {
+    if (!isQrDialogOpen || !paymentIntentId) return;
+
+    const pollPaymentStatus = async () => {
+      try {
+        const statusRes = await getPaymentIntentStatus(paymentIntentId);
+        const status = statusRes.data.attributes.status;
+        
+        console.log('Payment status:', status);
+        
+        if (status === 'succeeded') {
+          // Payment successful, navigate to return URL
+          setIsQrDialogOpen(false);
+          router.push(returnUrl);
+        }
+      } catch (err) {
+        console.error('Failed to check payment status:', err);
+      }
+    };
+
+    // Poll immediately once
+    pollPaymentStatus();
+
+    // Then poll every 7 seconds
+    const intervalId = setInterval(pollPaymentStatus, 7000);
+
+    // Cleanup interval on unmount or when dialog closes
+    return () => clearInterval(intervalId);
+  }, [isQrDialogOpen, paymentIntentId, returnUrl, router]);
+
   const handleBack = () => {
     router.push('/');
   };
@@ -57,11 +101,42 @@ export default function EWalletCheckoutPage() {
     setIsWalletDialogOpen(true);
   };
 
-  const handleWalletSelect = (walletType: 'gcash' | 'paymaya') => {
-    console.log('Selected wallet:', walletType);
-    console.log('Product:', product);
-    // TODO: Proceed with payment
+  const handleWalletSelect = async (walletType: 'gcash' | 'paymaya') => {
+    if (!product) return;
+
+    setSelectedWallet(walletType);
     setIsWalletDialogOpen(false);
+    setIsQrDialogOpen(true);
+    setIsProcessingPayment(true);
+    setQrCodeUrl(null);
+    setPaymentIntentId(null);
+
+    try {
+      // Step 1: Create payment method
+      const paymentMethodRes = await createPaymentMethod(walletType);
+      const paymentMethodId = paymentMethodRes.data.id;
+
+      // Step 2: Create payment intent
+      const amount = Math.round(product.price * 100); // Convert to cents
+      const paymentIntentRes = await createPaymentIntent(amount, [walletType]);
+      const intentId = paymentIntentRes.data.id;
+      setPaymentIntentId(intentId);
+
+      // Step 3: Attach payment intent
+      const returnUrlValue = `${window.location.origin}/product/${product.id}/transaction/complete`;
+      setReturnUrl(returnUrlValue);
+      const attachRes = await attachPaymentIntent(paymentMethodId, intentId, returnUrlValue);
+      
+      // Get redirect URL for QR code
+      const redirectUrl = attachRes.data.attributes.next_action.redirect.url;
+      setQrCodeUrl(redirectUrl);
+    } catch (err) {
+      console.error('Payment processing error:', err);
+      setError(err instanceof Error ? err.message : 'Failed to process payment');
+      setIsQrDialogOpen(false);
+    } finally {
+      setIsProcessingPayment(false);
+    }
   };
 
   if (error) {
@@ -290,6 +365,63 @@ export default function EWalletCheckoutPage() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsWalletDialogOpen(false)}>
               Cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </DialogRoot>
+
+      {/* QR Code Payment Dialog */}
+      <DialogRoot open={isQrDialogOpen} onOpenChange={(e) => !e.open && setIsQrDialogOpen(false)} size="lg">
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Scan QR Code to Pay</DialogTitle>
+            <DialogDescription>
+              Open your {selectedWallet === 'gcash' ? 'GCash' : 'PayMaya'} app and scan the QR code below
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogCloseTrigger />
+
+          <DialogBody>
+            <Stack gap={4} alignItems="center">
+              {isProcessingPayment ? (
+                <Box width="300px" height="300px" display="flex" alignItems="center" justifyContent="center">
+                  <Stack gap={3} width="100%">
+                    <Skeleton height="300px" width="300px" />
+                    <Text textAlign="center" color="fg.muted">
+                      Generating QR code...
+                    </Text>
+                  </Stack>
+                </Box>
+              ) : qrCodeUrl ? (
+                <>
+                  <Box p={4} borderRadius="md">
+                    <QrCode value={qrCodeUrl} size={"xl"} />
+                  </Box>
+                  <Stack gap={2} textAlign="center">
+                    <Text fontWeight="bold" fontSize="lg">
+                      ₱{product?.price.toFixed(2)}
+                    </Text>
+                    <Text fontSize="sm" color="fg.muted">
+                      Scan with your {selectedWallet === 'gcash' ? 'GCash' : 'PayMaya'} app
+                    </Text>
+                    <Text fontSize="xs" color="fg.muted">
+                      Payment status is being monitored automatically
+                    </Text>
+                  </Stack>
+                </>
+              ) : (
+                <EmptyState
+                  title="Failed to generate QR code"
+                  description="Please try again"
+                />
+              )}
+            </Stack>
+          </DialogBody>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsQrDialogOpen(false)}>
+              Cancel Payment
             </Button>
           </DialogFooter>
         </DialogContent>

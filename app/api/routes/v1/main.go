@@ -153,7 +153,7 @@ func MainRoutes(prefix string, mux *http.ServeMux) {
 	)
 
 	mux.Handle(
-		fmt.Sprintf("GET /%s/payment_intents", prefix),
+		fmt.Sprintf("GET /%s/payment_intents/{paymentIntentId}", prefix),
 		http.HandlerFunc(handlers.PayMongoGetPaymentIntent),
 	)
 
