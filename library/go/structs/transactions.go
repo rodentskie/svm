@@ -16,3 +16,8 @@ type CreateTransactionAdjustmentRequest struct {
 type CreatePaymentMethod struct {
 	Method string `json:"method" validate:"required,oneof=gcash paymaya"`
 }
+
+type CreatePaymentIntent struct {
+	Amount                float64  `json:"amount" validate:"required,gt=0"`
+	PaymentMethodsAllowed []string `json:"payment_methods_allowed" validate:"required,dive,oneof=gcash paymaya"`
+}
