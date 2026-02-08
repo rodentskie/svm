@@ -21,3 +21,9 @@ type CreatePaymentIntent struct {
 	Amount                float64  `json:"amount" validate:"required,gt=0"`
 	PaymentMethodsAllowed []string `json:"payment_methods_allowed" validate:"required,dive,oneof=gcash paymaya"`
 }
+
+type AttachPaymentIntent struct {
+	PaymentIntentID string `json:"payment_intent_id" validate:"required"`
+	PaymentMethodID string `json:"payment_method_id" validate:"required"`
+	ReturnURL       string `json:"return_url" validate:"required,url"`
+}
