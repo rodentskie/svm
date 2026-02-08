@@ -37,7 +37,7 @@ func PayMongoCreatePaymentMethod(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	pk := env.GetEnv("PAYMONGO_PUBLIC_KEY", "pk_test_zzxxx")
+	pk := env.GetEnv("PAYMONGO_SECRET_KEY", "pk_test_zzxxx")
 	encodedPK := base64.StdEncoding.EncodeToString([]byte(pk))
 
 	url := "https://api.paymongo.com/v1/payment_methods"
@@ -120,7 +120,7 @@ func PayMongoCreatePaymentIntent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	pk := env.GetEnv("PAYMONGO_PUBLIC_KEY", "pk_test_zzxxx")
+	pk := env.GetEnv("PAYMONGO_SECRET_KEY", "pk_test_zzxxx")
 	encodedPK := base64.StdEncoding.EncodeToString([]byte(pk))
 
 	// Marshal payment methods to JSON array with proper quotes
@@ -228,6 +228,67 @@ func PayMongoAttachPaymentIntent(w http.ResponseWriter, r *http.Request) {
 
 	client := &http.Client{}
 	req, err := http.NewRequest(method, url, payload)
+
+	if err != nil {
+		payMongoLog.Error("failed to create new request", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to create request")
+		return
+	}
+	req.Header.Add("Accept", "application/json")
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Authorization", "Basic "+encodedPK)
+
+	res, err := client.Do(req)
+	if err != nil {
+		payMongoLog.Error("failed to execute request", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to execute request")
+		return
+	}
+	defer res.Body.Close()
+
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		payMongoLog.Error("failed to read response body", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to read response")
+		return
+	}
+
+	// Parse PayMongo response to validate it's proper JSON
+	var paymongoResponse map[string]interface{}
+	if err := json.Unmarshal(body, &paymongoResponse); err != nil {
+		payMongoLog.Error("failed to parse paymongo response", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to parse payment provider response")
+		return
+	}
+
+	// Return the full PayMongo response
+	if res.StatusCode != http.StatusOK {
+		responses.ErrorResponseJSON(w, http.StatusBadRequest, paymongoResponse)
+		return
+	}
+	responses.SuccessResponse(w, paymongoResponse)
+
+}
+
+func PayMongoGetPaymentIntent(w http.ResponseWriter, r *http.Request) {
+	defer payMongoLog.Sync()
+
+	// Parse request body
+	var reqBody structs.GetPaymentIntent
+	if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
+		payMongoLog.Error("failed to decode request body", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	pk := env.GetEnv("PAYMONGO_SECRET_KEY", "pk_test_zzxxx")
+	encodedPK := base64.StdEncoding.EncodeToString([]byte(pk))
+
+	url := "https://api.paymongo.com/v1/payment_intents/" + reqBody.PaymentIntentID
+	method := "GET"
+
+	client := &http.Client{}
+	req, err := http.NewRequest(method, url, nil)
 
 	if err != nil {
 		payMongoLog.Error("failed to create new request", zap.Error(err))

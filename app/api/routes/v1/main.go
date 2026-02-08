@@ -151,4 +151,10 @@ func MainRoutes(prefix string, mux *http.ServeMux) {
 		fmt.Sprintf("POST /%s/payment_intents/attach", prefix),
 		http.HandlerFunc(handlers.PayMongoAttachPaymentIntent),
 	)
+
+	mux.Handle(
+		fmt.Sprintf("GET /%s/payment_intents", prefix),
+		http.HandlerFunc(handlers.PayMongoGetPaymentIntent),
+	)
+
 }

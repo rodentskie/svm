@@ -27,3 +27,7 @@ type AttachPaymentIntent struct {
 	PaymentMethodID string `json:"payment_method_id" validate:"required"`
 	ReturnURL       string `json:"return_url" validate:"required,url"`
 }
+
+type GetPaymentIntent struct {
+	PaymentIntentID string `json:"payment_intent_id" validate:"required"`
+}
