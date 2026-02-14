@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { Box, Container, Stack, Text, Button } from '@chakra-ui/react';
 import { FaCheckCircle } from 'react-icons/fa';
@@ -12,10 +12,16 @@ export default function TransactionCompletePage() {
   const searchParams = useSearchParams();
   const productId = params.productId as string;
   const [isProcessing, setIsProcessing] = useState(true);
+  
+  const hasRecorded = useRef(false);
 
-  async function recordTransaction() {
-    try {
-      if (isProcessing) {
+  useEffect(() => {
+    async function recordTransaction() {
+      // Prevent duplicate calls in development strict mode
+      if (hasRecorded.current) return;
+      hasRecorded.current = true;
+
+      try {
         const paymentMethod = searchParams.get('payment_method') || 'e-wallet';
         const location = searchParams.get('location') || 'A-1';
         const rfid = searchParams.get('rfid') || '';
@@ -33,19 +39,16 @@ export default function TransactionCompletePage() {
           );
           console.log('Transaction recorded successfully');
         }
+      } catch (err) {
+        console.error('Failed to record transaction:', err);
+        hasRecorded.current = false; // Allow retry on error
+      } finally {
+        setIsProcessing(false);
       }
-    } catch (err) {
-      console.error('Failed to record transaction:', err);
-    } finally {
-      setIsProcessing(false);
     }
-  }
 
-  useEffect(() => {
-    (async () => {
-      await recordTransaction();
-    })();
-  }, [isProcessing]);
+    recordTransaction();
+  }, [productId, searchParams]);
 
   const handleGoHome = () => {
     router.push('/');
