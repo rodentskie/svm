@@ -13,30 +13,52 @@ export default function TransactionCompletePage() {
   const productId = params.productId as string;
   const [isProcessing, setIsProcessing] = useState(true);
 
-  useEffect(() => {
-    async function recordTransaction() {
-      try {
+  async function recordTransaction() {
+    try {
+      if (isProcessing) {
         const paymentMethod = searchParams.get('payment_method') || 'e-wallet';
         const location = searchParams.get('location') || 'A-1';
+        const rfid = searchParams.get('rfid') || '';
+        const paymentIntentId = searchParams.get('paymentIntentId') || '';
 
-        await createTransaction(location, 'purchase', 1, paymentMethod);
-        console.log('Transaction recorded successfully');
-      } catch (err) {
-        console.error('Failed to record transaction:', err);
-      } finally {
-        setIsProcessing(false);
+        const payMongoPaymentIntent = searchParams.get('payment_intent_id');
+        if (!payMongoPaymentIntent) {
+          await createTransaction(
+            location,
+            'purchase',
+            1,
+            paymentMethod,
+            rfid,
+            paymentIntentId,
+          );
+          console.log('Transaction recorded successfully');
+        }
       }
+    } catch (err) {
+      console.error('Failed to record transaction:', err);
+    } finally {
+      setIsProcessing(false);
     }
+  }
 
-    recordTransaction();
-  }, [productId, searchParams]);
+  useEffect(() => {
+    (async () => {
+      await recordTransaction();
+    })();
+  }, [isProcessing]);
 
   const handleGoHome = () => {
     router.push('/');
   };
 
   return (
-    <Box minHeight="100vh" bg="bg.canvas" display="flex" alignItems="center" justifyContent="center">
+    <Box
+      minHeight="100vh"
+      bg="bg.canvas"
+      display="flex"
+      alignItems="center"
+      justifyContent="center"
+    >
       <Container maxW="container.sm">
         <Stack gap={6} textAlign="center" p={8}>
           <Box display="flex" justifyContent="center">
@@ -60,12 +82,7 @@ export default function TransactionCompletePage() {
             </Text>
           </Stack>
 
-          <Button
-            colorPalette="blue"
-            size="lg"
-            onClick={handleGoHome}
-            mt={4}
-          >
+          <Button colorPalette="blue" size="lg" onClick={handleGoHome} mt={4}>
             Back to Home
           </Button>
         </Stack>

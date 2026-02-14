@@ -74,6 +74,19 @@ func CreateTransaction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Create transaction details
+	transactionDetail := models.TransactionDetails{
+		TransactionId:   transaction.ID,
+		RFID:            req.RFID,
+		PaymentIntentId: req.PaymentIntentId,
+	}
+
+	if err := db.Create(&transactionDetail).Error; err != nil {
+		transactionLog.Error("failed to create transaction details", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to create transaction details")
+		return
+	}
+
 	responses.NoContentResponse(w)
 }
 

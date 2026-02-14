@@ -1,10 +1,12 @@
 package structs
 
 type CreateTransactionRequest struct {
-	Location      string `json:"location" validate:"required"`
-	Type          string `json:"type" validate:"required"`
-	Quantity      uint16 `json:"quantity" validate:"required,min=1"`
-	PaymentMethod string `json:"payment_method" validate:"required,oneof=rfid e-wallet"`
+	Location        string `json:"location" validate:"required"`
+	Type            string `json:"type" validate:"required"`
+	Quantity        uint16 `json:"quantity" validate:"required,min=1"`
+	PaymentMethod   string `json:"payment_method" validate:"required,oneof=rfid e-wallet"`
+	RFID            string `json:"rfid,omitempty"`
+	PaymentIntentId string `json:"payment_intent_id,omitempty"`
 }
 
 type CreateTransactionAdjustmentRequest struct {

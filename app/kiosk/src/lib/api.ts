@@ -102,7 +102,9 @@ export async function createTransaction(
   location: string,
   type: string,
   quantity: number,
-  paymentMethod: string
+  paymentMethod: string,
+  rfid: string,
+  paymentIntentId: string
 ) {
   const response = await fetch(`${API_BASE_URL}/transactions`, {
     method: 'POST',
@@ -114,6 +116,8 @@ export async function createTransaction(
       type,
       quantity,
       payment_method: paymentMethod,
+      rfid,
+      payment_intent_id: paymentIntentId,
     }),
   });
   if (!response.ok) {
