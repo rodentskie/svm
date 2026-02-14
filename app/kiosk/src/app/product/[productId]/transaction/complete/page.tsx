@@ -1,19 +1,35 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { Box, Container, Stack, Text, Button } from '@chakra-ui/react';
 import { FaCheckCircle } from 'react-icons/fa';
+import { createTransaction } from '../../../../../lib/api';
 
 export default function TransactionCompletePage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const productId = params.productId as string;
+  const [isProcessing, setIsProcessing] = useState(true);
 
   useEffect(() => {
-    // TODO: Verify payment status with backend
-    console.log('Transaction complete for product:', productId);
-  }, [productId]);
+    async function recordTransaction() {
+      try {
+        const paymentMethod = searchParams.get('payment_method') || 'e-wallet';
+        const location = searchParams.get('location') || 'A-1';
+
+        await createTransaction(location, 'purchase', 1, paymentMethod);
+        console.log('Transaction recorded successfully');
+      } catch (err) {
+        console.error('Failed to record transaction:', err);
+      } finally {
+        setIsProcessing(false);
+      }
+    }
+
+    recordTransaction();
+  }, [productId, searchParams]);
 
   const handleGoHome = () => {
     router.push('/');
@@ -41,9 +57,6 @@ export default function TransactionCompletePage() {
           <Stack gap={3} mt={4}>
             <Text fontSize="sm" color="fg.muted">
               Please collect your item from the vending machine
-            </Text>
-            <Text fontSize="sm" color="fg.muted">
-              Transaction ID: {params.productId}
             </Text>
           </Stack>
 

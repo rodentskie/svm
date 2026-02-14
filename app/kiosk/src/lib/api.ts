@@ -97,3 +97,27 @@ export async function getPaymentIntentStatus(paymentIntentId: string) {
   }
   return response.json();
 }
+
+export async function createTransaction(
+  location: string,
+  type: string,
+  quantity: number,
+  paymentMethod: string
+) {
+  const response = await fetch(`${API_BASE_URL}/transactions`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      location,
+      type,
+      quantity,
+      payment_method: paymentMethod,
+    }),
+  });
+  if (!response.ok) {
+    throw new Error('Failed to create transaction');
+  }
+  return response.status === 204 ? null : response.json();
+}

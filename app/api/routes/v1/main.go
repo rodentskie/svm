@@ -89,7 +89,7 @@ func MainRoutes(prefix string, mux *http.ServeMux) {
 	// transactions
 	mux.Handle(
 		fmt.Sprintf("POST /%s/transactions", prefix),
-		middleware.AuthMiddleware(db)(http.HandlerFunc(handlers.CreateTransaction)),
+		http.HandlerFunc(handlers.CreateTransaction),
 	)
 
 	mux.Handle(

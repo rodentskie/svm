@@ -65,6 +65,7 @@ func CreateTransaction(w http.ResponseWriter, r *http.Request) {
 		TransactionType: req.Type,
 		Quantity:        int(req.Quantity),
 		PaymentMethod:   req.PaymentMethod,
+		Status:          "completed",
 	}
 
 	if err := db.Create(&transaction).Error; err != nil {
