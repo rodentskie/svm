@@ -123,7 +123,8 @@ export default function EWalletCheckoutPage() {
       setPaymentIntentId(intentId);
 
       // Step 3: Attach payment intent
-      const returnUrlValue = `${window.location.origin}/product/${product.id}/transaction/complete?payment_method=e-wallet&location=${encodeURIComponent(product.location)}`;
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+      const returnUrlValue = `${appUrl}/product/${product.id}/transaction/complete?payment_method=e-wallet&location=${encodeURIComponent(product.location)}&paymentIntentId=${encodeURIComponent(intentId)}`;
       setReturnUrl(returnUrlValue);
       const attachRes = await attachPaymentIntent(paymentMethodId, intentId, returnUrlValue);
       
