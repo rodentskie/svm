@@ -5,6 +5,7 @@ import (
 	"library/go/database"
 	"library/go/logger"
 	"library/go/models"
+	"library/go/password"
 	"library/go/responses"
 	"library/go/structs"
 	"net/http"
@@ -29,8 +30,8 @@ func CreateStudent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Validate required fields
-	if req.Name == "" || req.RFID == "" {
-		responses.ErrorResponse(w, http.StatusBadRequest, "Name and RFID are required")
+	if req.Name == "" || req.RFID == "" || req.Pin == "" {
+		responses.ErrorResponse(w, http.StatusBadRequest, "Name, RFID, and PIN are required")
 		return
 	}
 
@@ -55,11 +56,20 @@ func CreateStudent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Hash pin
+	hashedPin, err := password.HashPassword(req.Pin)
+	if err != nil {
+		studentLog.Error("failed to hash password", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to create student")
+		return
+	}
+
 	// Create student
 	newStudent := models.Student{
-		Name: req.Name,
-		RFID: req.RFID,
-		Load: req.Load,
+		Name:    req.Name,
+		RFID:    req.RFID,
+		PinHash: hashedPin,
+		Load:    req.Load,
 	}
 
 	if err := db.Create(&newStudent).Error; err != nil {
@@ -219,12 +229,21 @@ func UpdateStudent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Update fields
-	updates := make(map[string]interface{})
+	updates := make(map[string]any)
 	if req.Name != "" {
 		updates["name"] = req.Name
 	}
 	if req.RFID != "" {
 		updates["rfid"] = req.RFID
+	}
+	if req.Pin != "" {
+		hashedPin, err := password.HashPassword(req.Pin)
+		if err != nil {
+			studentLog.Error("failed to hash pin", zap.Error(err))
+			responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to update student")
+			return
+		}
+		updates["pin_hash"] = hashedPin
 	}
 
 	// Update student
