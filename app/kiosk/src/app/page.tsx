@@ -7,7 +7,8 @@ import { EmptyState } from '@svm/components/empty-state';
 import { CategorySidebar } from '../components/CategorySidebar';
 import { ProductGrid } from '../components/ProductGrid';
 import { PaymentMethodDialog } from '../components/PaymentMethodDialog';
-import { fetchCategories, fetchProductsByCategory } from '../lib/api';
+import { RFIDInputDialog } from '../components/RFIDInputDialog';
+import { fetchCategories, fetchProductsByCategory, fetchStudentByRFID } from '../lib/api';
 import { Category, Product, PaymentMethod } from '../types';
 
 export default function MainPage() {
@@ -20,6 +21,9 @@ export default function MainPage() {
   const [error, setError] = useState<string | null>(null);
   const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [isRFIDDialogOpen, setIsRFIDDialogOpen] = useState(false);
+  const [isLoadingRFID, setIsLoadingRFID] = useState(false);
+  const [rfidError, setRfidError] = useState<string | null>(null);
 
   // Fetch categories on mount
   useEffect(() => {
@@ -81,10 +85,30 @@ export default function MainPage() {
     
     if (methodName.includes('wallet') || methodName.includes('e-wallet')) {
       router.push(`/checkout/e-wallet/${product.id}`);
+    } else if (methodName.includes('rfid')) {
+      setIsRFIDDialogOpen(true);
+      setRfidError(null);
     } else {
       console.log('Payment method selected:', paymentMethod.name);
       console.log('Product:', product.name);
       console.log('Price:', product.price);
+    }
+  };
+
+  const handleRFIDSubmit = async (rfid: string, product: Product) => {
+    try {
+      setIsLoadingRFID(true);
+      setRfidError(null);
+      
+      const studentData = await fetchStudentByRFID(rfid);
+      
+      // Redirect to RFID checkout page with student and product data
+      setIsRFIDDialogOpen(false);
+      router.push(`/checkout/rfid/${product.id}?rfid=${encodeURIComponent(rfid)}&load=${studentData.load}`);
+    } catch (err) {
+      setRfidError(err instanceof Error ? err.message : 'Failed to verify RFID');
+    } finally {
+      setIsLoadingRFID(false);
     }
   };
 
@@ -152,6 +176,19 @@ export default function MainPage() {
         onClose={() => setIsPaymentDialogOpen(false)}
         product={selectedProduct}
         onPaymentSelect={handlePaymentSelect}
+      />
+
+      {/* RFID Input Dialog */}
+      <RFIDInputDialog
+        open={isRFIDDialogOpen}
+        onClose={() => {
+          setIsRFIDDialogOpen(false);
+          setRfidError(null);
+        }}
+        product={selectedProduct}
+        onSubmit={handleRFIDSubmit}
+        isLoading={isLoadingRFID}
+        error={rfidError}
       />
     </Flex>
   );

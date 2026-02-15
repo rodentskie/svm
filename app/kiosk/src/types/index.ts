@@ -23,3 +23,8 @@ export interface PaymentMethod {
   id: number;
   name: string;
 }
+
+export interface Student {
+  rfid: string;
+  load: number;
+}

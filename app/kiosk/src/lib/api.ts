@@ -125,3 +125,14 @@ export async function createTransaction(
   }
   return response.status === 204 ? null : response.json();
 }
+
+export async function fetchStudentByRFID(rfid: string) {
+  const response = await fetch(`${API_BASE_URL}/students/rfid?rfid=${encodeURIComponent(rfid)}`);
+  if (!response.ok) {
+    if (response.status === 404) {
+      throw new Error('Student not found');
+    }
+    throw new Error('Failed to fetch student data');
+  }
+  return response.json();
+}
