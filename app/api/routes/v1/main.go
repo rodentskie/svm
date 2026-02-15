@@ -130,6 +130,11 @@ func MainRoutes(prefix string, mux *http.ServeMux) {
 		middleware.AuthMiddleware(db)(http.HandlerFunc(handlers.DeleteStudent)),
 	)
 
+	mux.Handle(
+		fmt.Sprintf("GET /%s/students/rfid", prefix),
+		http.HandlerFunc(handlers.GetStudentByRFID),
+	)
+
 	// payment methods
 	mux.Handle(
 		fmt.Sprintf("GET /%s/payment_methods", prefix),
