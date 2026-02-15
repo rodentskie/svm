@@ -136,3 +136,14 @@ export async function fetchStudentByRFID(rfid: string) {
   }
   return response.json();
 }
+
+export async function validateStudentPIN(rfid: string, pin: string) {
+  const response = await fetch(`${API_BASE_URL}/students/pin?rfid=${encodeURIComponent(rfid)}&pin=${encodeURIComponent(pin)}`);
+  if (!response.ok) {
+    if (response.status === 401) {
+      throw new Error('Invalid PIN');
+    }
+    throw new Error('Failed to validate PIN');
+  }
+  return response.json();
+}
