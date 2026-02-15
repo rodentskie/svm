@@ -56,10 +56,16 @@ func CreateStudent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// pin only needs to be 4 digits, so we can enforce that here
+	if len(req.Pin) != 4 {
+		responses.ErrorResponse(w, http.StatusBadRequest, "PIN must be exactly 4 digits")
+		return
+	}
+
 	// Hash pin
 	hashedPin, err := password.HashPassword(req.Pin)
 	if err != nil {
-		studentLog.Error("failed to hash password", zap.Error(err))
+		studentLog.Error("failed to hash pin", zap.Error(err))
 		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to create student")
 		return
 	}
@@ -226,6 +232,12 @@ func UpdateStudent(w http.ResponseWriter, r *http.Request) {
 			responses.ErrorResponse(w, http.StatusConflict, "Student with this RFID already exists")
 			return
 		}
+	}
+
+	// pin only needs to be 4 digits, so we can enforce that here
+	if len(req.Pin) != 4 {
+		responses.ErrorResponse(w, http.StatusBadRequest, "PIN must be exactly 4 digits")
+		return
 	}
 
 	// Update fields
@@ -454,6 +466,58 @@ func GetStudentByRFID(w http.ResponseWriter, r *http.Request) {
 	// Build response
 	res := map[string]any{
 		"load": student.Load,
+	}
+
+	responses.SuccessResponse(w, res)
+}
+
+func ValidateStudentPin(w http.ResponseWriter, r *http.Request) {
+	defer studentLog.Sync()
+
+	// Get RFID from query parameter
+	rfid := r.URL.Query().Get("rfid")
+	if rfid == "" {
+		responses.ErrorResponse(w, http.StatusBadRequest, "RFID query parameter is required")
+		return
+	}
+
+	// Get PIN from query parameter
+	pin := r.URL.Query().Get("pin")
+	if pin == "" {
+		responses.ErrorResponse(w, http.StatusBadRequest, "PIN query parameter is required")
+		return
+	}
+
+	// Get database connection
+	db, err := database.GetDB()
+	if err != nil {
+		studentLog.Error("failed to get database connection", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Database connection error")
+		return
+	}
+
+	// Fetch student by PIN
+	var student models.Student
+	if err := db.Where("rfid = ?", rfid).First(&student).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			responses.ErrorResponse(w, http.StatusNotFound, "Student not found")
+			return
+		}
+		studentLog.Error("failed to fetch student", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to fetch student")
+		return
+	}
+
+	// Validate PIN
+	pinHash := student.PinHash
+	if err := password.ValidatePassword(pinHash, pin); err != nil {
+		responses.ErrorResponse(w, http.StatusUnauthorized, "Invalid PIN")
+		return
+	}
+
+	// Build response
+	res := map[string]any{
+		"valid": true,
 	}
 
 	responses.SuccessResponse(w, res)

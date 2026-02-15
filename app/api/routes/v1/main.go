@@ -135,6 +135,11 @@ func MainRoutes(prefix string, mux *http.ServeMux) {
 		http.HandlerFunc(handlers.GetStudentByRFID),
 	)
 
+	mux.Handle(
+		fmt.Sprintf("GET /%s/students/pin", prefix),
+		http.HandlerFunc(handlers.ValidateStudentPin),
+	)
+
 	// payment methods
 	mux.Handle(
 		fmt.Sprintf("GET /%s/payment_methods", prefix),
