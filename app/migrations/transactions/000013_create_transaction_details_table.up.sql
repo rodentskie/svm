@@ -2,7 +2,8 @@
 CREATE TABLE IF NOT EXISTS transaction_details (
     id SERIAL PRIMARY KEY,
     transaction_id INTEGER NOT NULL,
-    rfid VARCHAR(10),
+    rfid VARCHAR(20),
+    payment_intent_id VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_transaction_details_transaction

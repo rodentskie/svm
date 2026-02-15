@@ -14,13 +14,16 @@ type Product struct {
 	Quantity     int            `gorm:"not null;default:0" json:"quantity"`
 	MinThreshold int            `gorm:"default:5" json:"min_threshold"`
 	Location     string         `gorm:"size:50" json:"location"`
+	ImagePath    string         `gorm:"size:255" json:"image_path,omitempty"`
 	CreatedAt    time.Time      `gorm:"<-:false" json:"created_at"`
 	UpdatedAt    time.Time      `gorm:"<-:false" json:"updated_at"`
 	DeletedAt    gorm.DeletedAt `gorm:"index" json:"-"`
+	CategoryID   uint           `gorm:"not null;index" json:"category_id"`
 
 	// Relationships
 	Transactions         []Transaction         `gorm:"foreignKey:ProductID" json:"transactions,omitempty"`
 	InventoryAdjustments []InventoryAdjustment `gorm:"foreignKey:ProductID" json:"inventory_adjustments,omitempty"`
+	Category             ProductCategories     `gorm:"foreignKey:CategoryID" json:"category"`
 }
 
 func (Product) TableName() string {

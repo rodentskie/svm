@@ -400,3 +400,42 @@ func UpdateStudentLoad(w http.ResponseWriter, r *http.Request) {
 
 	responses.SuccessResponse(w, studentResponse)
 }
+
+// GetStudentByRFID retrieves a student by RFID query parameter
+func GetStudentByRFID(w http.ResponseWriter, r *http.Request) {
+	defer studentLog.Sync()
+
+	// Get RFID from query parameter
+	rfid := r.URL.Query().Get("rfid")
+	if rfid == "" {
+		responses.ErrorResponse(w, http.StatusBadRequest, "RFID query parameter is required")
+		return
+	}
+
+	// Get database connection
+	db, err := database.GetDB()
+	if err != nil {
+		studentLog.Error("failed to get database connection", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Database connection error")
+		return
+	}
+
+	// Fetch student by RFID
+	var student models.Student
+	if err := db.Where("rfid = ?", rfid).First(&student).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			responses.ErrorResponse(w, http.StatusNotFound, "Student not found")
+			return
+		}
+		studentLog.Error("failed to fetch student", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to fetch student")
+		return
+	}
+
+	// Build response
+	res := map[string]any{
+		"load": student.Load,
+	}
+
+	responses.SuccessResponse(w, res)
+}

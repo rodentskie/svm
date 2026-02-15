@@ -1,0 +1,326 @@
+package handlers
+
+import (
+	"encoding/base64"
+	"encoding/json"
+	"fmt"
+	"io"
+	"library/go/env"
+	"library/go/logger"
+	"library/go/responses"
+	"library/go/structs"
+	"net/http"
+	"slices"
+	"strings"
+
+	"go.uber.org/zap"
+)
+
+var payMongoLog = logger.NewLogger("paymongo-handler")
+
+func PayMongoCreatePaymentMethod(w http.ResponseWriter, r *http.Request) {
+	defer payMongoLog.Sync()
+
+	// Parse request body
+	var reqBody structs.CreatePaymentMethod
+	if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
+		payMongoLog.Error("failed to decode request body", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	validMethods := []string{"gcash", "paymaya"}
+	methodValid := slices.Contains(validMethods, reqBody.Method)
+
+	if !methodValid {
+		responses.ErrorResponse(w, http.StatusBadRequest, "Invalid payment method. Valid methods are: gcash, paymaya")
+		return
+	}
+
+	pk := env.GetEnv("PAYMONGO_SECRET_KEY", "pk_test_zzxxx")
+	encodedPK := base64.StdEncoding.EncodeToString([]byte(pk))
+
+	url := "https://api.paymongo.com/v1/payment_methods"
+	method := "POST"
+
+	payload := strings.NewReader(`{
+    "data": {
+        "attributes": {
+            "type": "` + reqBody.Method + `"
+        }
+    }
+}`)
+
+	client := &http.Client{}
+	req, err := http.NewRequest(method, url, payload)
+
+	if err != nil {
+		payMongoLog.Error("failed to create new request", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to create request")
+		return
+	}
+	req.Header.Add("Accept", "application/json")
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Authorization", "Basic "+encodedPK)
+
+	res, err := client.Do(req)
+	if err != nil {
+		payMongoLog.Error("failed to execute request", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to execute request")
+		return
+	}
+	defer res.Body.Close()
+
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		payMongoLog.Error("failed to read response body", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to read response")
+		return
+	}
+
+	var paymongoResponse map[string]interface{}
+	if err := json.Unmarshal(body, &paymongoResponse); err != nil {
+		payMongoLog.Error("failed to parse paymongo response", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to parse payment provider response")
+		return
+	}
+
+	// Return the full PayMongo response
+	if res.StatusCode != http.StatusOK {
+		responses.ErrorResponseJSON(w, http.StatusBadRequest, paymongoResponse)
+		return
+	}
+	responses.SuccessResponse(w, paymongoResponse)
+
+}
+
+func PayMongoCreatePaymentIntent(w http.ResponseWriter, r *http.Request) {
+	defer payMongoLog.Sync()
+
+	// Parse request body
+	var reqBody structs.CreatePaymentIntent
+	if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
+		payMongoLog.Error("failed to decode request body", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	validMethods := []string{"gcash", "paymaya"}
+	methodValid := false
+	for _, method := range reqBody.PaymentMethodsAllowed {
+		if !slices.Contains(validMethods, method) {
+			methodValid = false
+			break
+		}
+		methodValid = true
+	}
+
+	if !methodValid {
+		responses.ErrorResponse(w, http.StatusBadRequest, "Invalid payment method. Valid methods are: gcash, paymaya")
+		return
+	}
+
+	pk := env.GetEnv("PAYMONGO_SECRET_KEY", "pk_test_zzxxx")
+	encodedPK := base64.StdEncoding.EncodeToString([]byte(pk))
+
+	// Marshal payment methods to JSON array with proper quotes
+	paymentMethodsJSON, err := json.Marshal(reqBody.PaymentMethodsAllowed)
+	if err != nil {
+		payMongoLog.Error("failed to marshal payment methods", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to process payment methods")
+		return
+	}
+
+	url := "https://api.paymongo.com/v1/payment_intents"
+	method := "POST"
+
+	payload := strings.NewReader(`{
+  "data": {
+    "attributes": {
+      "amount": ` + fmt.Sprintf("%v", reqBody.Amount) + `,
+      "payment_method_allowed": ` + string(paymentMethodsJSON) + `,
+      "payment_method_options": {
+        "card": {
+          "request_three_d_secure": "any"
+        }
+      },
+      "currency": "PHP",
+      "capture_type": "automatic"
+    }
+  }
+}`)
+
+	client := &http.Client{}
+	req, err := http.NewRequest(method, url, payload)
+
+	if err != nil {
+		payMongoLog.Error("failed to create new request", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to create request")
+		return
+	}
+	req.Header.Add("Accept", "application/json")
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Authorization", "Basic "+encodedPK)
+
+	res, err := client.Do(req)
+	if err != nil {
+		payMongoLog.Error("failed to execute request", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to execute request")
+		return
+	}
+	defer res.Body.Close()
+
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		payMongoLog.Error("failed to read response body", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to read response")
+		return
+	}
+
+	// Parse PayMongo response to validate it's proper JSON
+	var paymongoResponse map[string]interface{}
+	if err := json.Unmarshal(body, &paymongoResponse); err != nil {
+		payMongoLog.Error("failed to parse paymongo response", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to parse payment provider response")
+		return
+	}
+
+	// Return the full PayMongo response
+	if res.StatusCode != http.StatusOK {
+		responses.ErrorResponseJSON(w, http.StatusBadRequest, paymongoResponse)
+		return
+	}
+	responses.SuccessResponse(w, paymongoResponse)
+
+}
+
+func PayMongoAttachPaymentIntent(w http.ResponseWriter, r *http.Request) {
+	defer payMongoLog.Sync()
+
+	// Parse request body
+	var reqBody structs.AttachPaymentIntent
+	if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
+		payMongoLog.Error("failed to decode request body", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	// input validation
+	if reqBody.PaymentIntentID == "" || reqBody.PaymentMethodID == "" || reqBody.ReturnURL == "" {
+		responses.ErrorResponse(w, http.StatusBadRequest, "Missing required fields")
+		return
+	}
+
+	pk := env.GetEnv("PAYMONGO_SECRET_KEY", "pk_test_zzxxx")
+	encodedPK := base64.StdEncoding.EncodeToString([]byte(pk))
+
+	url := "https://api.paymongo.com/v1/payment_intents/" + reqBody.PaymentIntentID + "/attach"
+	method := "POST"
+
+	payload := strings.NewReader(`{
+  "data": {
+    "attributes": {
+      "payment_method": "` + reqBody.PaymentMethodID + `",
+      "return_url": "` + reqBody.ReturnURL + `"
+    }
+  }
+}`)
+
+	client := &http.Client{}
+	req, err := http.NewRequest(method, url, payload)
+
+	if err != nil {
+		payMongoLog.Error("failed to create new request", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to create request")
+		return
+	}
+	req.Header.Add("Accept", "application/json")
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Authorization", "Basic "+encodedPK)
+
+	res, err := client.Do(req)
+	if err != nil {
+		payMongoLog.Error("failed to execute request", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to execute request")
+		return
+	}
+	defer res.Body.Close()
+
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		payMongoLog.Error("failed to read response body", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to read response")
+		return
+	}
+
+	// Parse PayMongo response to validate it's proper JSON
+	var paymongoResponse map[string]interface{}
+	if err := json.Unmarshal(body, &paymongoResponse); err != nil {
+		payMongoLog.Error("failed to parse paymongo response", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to parse payment provider response")
+		return
+	}
+
+	// Return the full PayMongo response
+	if res.StatusCode != http.StatusOK {
+		responses.ErrorResponseJSON(w, http.StatusBadRequest, paymongoResponse)
+		return
+	}
+	responses.SuccessResponse(w, paymongoResponse)
+
+}
+
+func PayMongoGetPaymentIntent(w http.ResponseWriter, r *http.Request) {
+	defer payMongoLog.Sync()
+
+	paymentIntentId := r.PathValue("paymentIntentId")
+
+	pk := env.GetEnv("PAYMONGO_SECRET_KEY", "pk_test_zzxxx")
+	encodedPK := base64.StdEncoding.EncodeToString([]byte(pk))
+
+	url := "https://api.paymongo.com/v1/payment_intents/" + paymentIntentId
+	method := "GET"
+
+	client := &http.Client{}
+	req, err := http.NewRequest(method, url, nil)
+
+	if err != nil {
+		payMongoLog.Error("failed to create new request", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to create request")
+		return
+	}
+	req.Header.Add("Accept", "application/json")
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Authorization", "Basic "+encodedPK)
+
+	res, err := client.Do(req)
+	if err != nil {
+		payMongoLog.Error("failed to execute request", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to execute request")
+		return
+	}
+	defer res.Body.Close()
+
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		payMongoLog.Error("failed to read response body", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to read response")
+		return
+	}
+
+	// Parse PayMongo response to validate it's proper JSON
+	var paymongoResponse map[string]interface{}
+	if err := json.Unmarshal(body, &paymongoResponse); err != nil {
+		payMongoLog.Error("failed to parse paymongo response", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to parse payment provider response")
+		return
+	}
+
+	// Return the full PayMongo response
+	if res.StatusCode != http.StatusOK {
+		responses.ErrorResponseJSON(w, http.StatusBadRequest, paymongoResponse)
+		return
+	}
+	responses.SuccessResponse(w, paymongoResponse)
+
+}

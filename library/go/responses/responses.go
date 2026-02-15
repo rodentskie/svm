@@ -28,6 +28,10 @@ func ErrorResponse(w http.ResponseWriter, statusCode int, message string) {
 	JSONResponse(w, statusCode, errorData)
 }
 
+func ErrorResponseJSON(w http.ResponseWriter, statusCode int, res any) {
+	JSONResponse(w, statusCode, res)
+}
+
 // MessageResponse sends a simple message response (200 OK)
 func MessageResponse(w http.ResponseWriter, message string) {
 	messageData := map[string]string{"message": message}

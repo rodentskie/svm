@@ -19,6 +19,8 @@ var productLog = logger.NewLogger("products-handler")
 func GetAllProducts(w http.ResponseWriter, r *http.Request) {
 	defer productLog.Sync()
 
+	category_id := r.URL.Query().Get("category_id")
+
 	// Get database connection
 	db, err := database.GetDB()
 	if err != nil {
@@ -27,16 +29,29 @@ func GetAllProducts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Fetch all products
+	// Build query
+	query := db.Preload("Category")
+
+	// Filter by category_id if provided
+	if category_id != "" {
+		categoryID, err := strconv.ParseUint(category_id, 10, 32)
+		if err != nil {
+			responses.ErrorResponse(w, http.StatusBadRequest, "Invalid category ID")
+			return
+		}
+		query = query.Where("category_id = ?", uint(categoryID))
+	}
+
+	// Fetch products
 	var products []models.Product
-	if err := db.Find(&products).Error; err != nil {
+	if err := query.Find(&products).Error; err != nil {
 		productLog.Error("failed to fetch products", zap.Error(err))
 		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to fetch products")
 		return
 	}
 
 	// Build response
-	var productsResponse []map[string]interface{}
+	var productsResponse []map[string]interface{} = make([]map[string]interface{}, 0)
 	for _, product := range products {
 		productsResponse = append(productsResponse, map[string]interface{}{
 			"id":            product.ID,
@@ -49,6 +64,10 @@ func GetAllProducts(w http.ResponseWriter, r *http.Request) {
 			"is_low_stock":  product.IsLowStock(),
 			"created_at":    product.CreatedAt.Format("2006-01-02 15:04:05"),
 			"updated_at":    product.UpdatedAt.Format("2006-01-02 15:04:05"),
+			"category": map[string]any{
+				"id":   product.Category.ID,
+				"name": product.Category.Name,
+			},
 		})
 	}
 
@@ -286,4 +305,38 @@ func CreateProduct(w http.ResponseWriter, r *http.Request) {
 	}
 
 	responses.CreatedResponse(w, productResponse)
+}
+
+func GetAllProductCategories(w http.ResponseWriter, r *http.Request) {
+	defer productLog.Sync()
+
+	// Get database connection
+	db, err := database.GetDB()
+	if err != nil {
+		productLog.Error("failed to get database connection", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Database connection error")
+		return
+	}
+
+	// Fetch all products
+	var categories []models.ProductCategories
+	if err := db.Find(&categories).Error; err != nil {
+		productLog.Error("failed to fetch products", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to fetch products")
+		return
+	}
+
+	// Build response
+	var res []map[string]interface{}
+	for _, c := range categories {
+		res = append(res, map[string]interface{}{
+			"id":         c.ID,
+			"name":       c.Name,
+			"created_at": c.CreatedAt.Format("2006-01-02 15:04:05"),
+			"updated_at": c.UpdatedAt.Format("2006-01-02 15:04:05"),
+		})
+	}
+
+	productLog.Info("fetched products successfully", zap.Int("count", len(res)))
+	responses.SuccessResponse(w, res)
 }

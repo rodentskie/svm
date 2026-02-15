@@ -6,9 +6,13 @@ This is a **Smart Vending Machine** system. It is built using Go in a monorepo s
 ## Architecture Overview
 
 This is a **Go monorepo managed by Nx** (`@obiente-lab/nx-go` plugin) using **Go workspaces** (`go.work`). The project structure separates concerns into:
-- `app/`: Executable applications (API server, migrations CLI, Next.js frontend)
-- `library/go/`: Reusable Go packages (database, auth, models, etc.)
-- `library/next/`: Reusable React/Next.js components
+- `app/`: Executable applications (API server, migrations CLI, Next.js frontends)
+  - `api/`: Go HTTP API server with authentication and business logic
+  - `migrations/`: CLI for database schema management (golang-migrate)
+  - `app/`: Next.js 16 admin/management frontend (port 3000)
+  - `kiosk/`: Next.js 16 kiosk interface for student/customer use
+- `library/go/`: Reusable Go packages (database, auth, models, jwt, logger, responses, etc.)
+- `library/next/components/`: Shared React components library (Chakra UI v3) used by both frontends
 
 All Go modules are independent with their own `go.mod`, linked via `go.work` for local development. Each component has a `project.json` defining Nx targets (build, serve, test, lint, tidy).
 
@@ -24,8 +28,11 @@ nx serve migrations up|down|drop
 # Serve API application (uses gow for hot-reload)
 nx serve api
 
-# Serve Next.js frontend
+# Serve Next.js admin frontend
 nx dev app
+
+# Serve Next.js kiosk frontend
+nx dev kiosk
 
 # Test/lint/tidy specific project
 nx test <project-name>
@@ -145,16 +152,37 @@ This is configured via `go.work` which links all modules. When creating new libr
 - Default: allows `http://localhost:3000` (Next.js frontend)
 - Configured in [app/api/main.go](app/api/main.go) with `AllowCredentials: true`
 
-## Frontend (app/app/)
+## Domain-Specific Patterns
+
+### Student Management (RFID-based)
+- Students identified by unique 10-char RFID
+- Each student has a "load" (wallet balance) tracked in database
+- Load updates via `POST /v1/students/{studentId}/load`
+- Transaction details link purchases to RFID for tracking
+- Models: [Student](library/go/models/students.go), [StudentsTransactionHistory](library/go/models/students_transaction_history.go)
+
+### Transaction & Inventory System
+- Transactions record product purchases with automatic stock updates via DB triggers
+- TransactionDetails table links transactions to student RFID
+- InventoryAdjustments table tracks manual stock changes (restocks, waste, etc.)
+- Triggers automatically update `products.stock` when transactions or adjustments occur
+- Example: [transactions.go](library/go/models/transactions.go), [transaction_details.go](library/go/models/transaction_details.go)
+
+## Frontend (app/app/ & app/kiosk/)
 
 - **Framework**: Next.js 16 with App Router
 - **React**: Version 19
 - **UI Library**: Chakra UI v3.31.0
 - **Theming**: next-themes for dark/light mode
 - **Icons**: react-icons
-- **Dev server**: Run with `nx dev app` (default port 3000)
-- **Build**: `nx build app` for production build
-- **Reusable components**: Create in `library/next/components/`
+- **Dev servers**: 
+  - Admin app: `nx dev app` (default port 3000)
+  - Kiosk app: `nx dev kiosk` (separate instance)
+- **Build**: `nx build app` or `nx build kiosk` for production builds
+- **Shared components**: Located in `library/next/components/src/` with ~57 pre-built Chakra UI components
+  - Components imported as: `import { Provider } from '@svm/components/provider'`
+  - All components use Chakra UI v3 primitives
+  - Provider wraps apps for theming support
 
 ## Creating New Components
 

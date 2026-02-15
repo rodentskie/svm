@@ -6,6 +6,7 @@ CREATE TABLE products (
     quantity INT NOT NULL DEFAULT 0 CHECK (quantity >= 0),
     min_threshold INT DEFAULT 5,
     location VARCHAR(10) UNIQUE NOT NULL,
+    image_path VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP

@@ -58,12 +58,17 @@ func MainRoutes(prefix string, mux *http.ServeMux) {
 	// products
 	mux.Handle(
 		fmt.Sprintf("GET /%s/products", prefix),
-		middleware.AuthMiddleware(db)(http.HandlerFunc(handlers.GetAllProducts)),
+		http.HandlerFunc(handlers.GetAllProducts),
+	)
+
+	mux.Handle(
+		fmt.Sprintf("GET /%s/products/categories", prefix),
+		http.HandlerFunc(handlers.GetAllProductCategories),
 	)
 
 	mux.Handle(
 		fmt.Sprintf("GET /%s/products/{productId}", prefix),
-		middleware.AuthMiddleware(db)(http.HandlerFunc(handlers.GetSingleProduct)),
+		http.HandlerFunc(handlers.GetSingleProduct),
 	)
 
 	mux.Handle(
@@ -84,7 +89,7 @@ func MainRoutes(prefix string, mux *http.ServeMux) {
 	// transactions
 	mux.Handle(
 		fmt.Sprintf("POST /%s/transactions", prefix),
-		middleware.AuthMiddleware(db)(http.HandlerFunc(handlers.CreateTransaction)),
+		http.HandlerFunc(handlers.CreateTransaction),
 	)
 
 	mux.Handle(
@@ -124,4 +129,37 @@ func MainRoutes(prefix string, mux *http.ServeMux) {
 		fmt.Sprintf("DELETE /%s/students/{studentId}", prefix),
 		middleware.AuthMiddleware(db)(http.HandlerFunc(handlers.DeleteStudent)),
 	)
+
+	mux.Handle(
+		fmt.Sprintf("GET /%s/students/rfid", prefix),
+		http.HandlerFunc(handlers.GetStudentByRFID),
+	)
+
+	// payment methods
+	mux.Handle(
+		fmt.Sprintf("GET /%s/payment_methods", prefix),
+		http.HandlerFunc(handlers.GetAllPaymentMethods),
+	)
+
+	// paymongo integration
+	mux.Handle(
+		fmt.Sprintf("POST /%s/payment_methods", prefix),
+		http.HandlerFunc(handlers.PayMongoCreatePaymentMethod),
+	)
+
+	mux.Handle(
+		fmt.Sprintf("POST /%s/payment_intents", prefix),
+		http.HandlerFunc(handlers.PayMongoCreatePaymentIntent),
+	)
+
+	mux.Handle(
+		fmt.Sprintf("POST /%s/payment_intents/attach", prefix),
+		http.HandlerFunc(handlers.PayMongoAttachPaymentIntent),
+	)
+
+	mux.Handle(
+		fmt.Sprintf("GET /%s/payment_intents/{paymentIntentId}", prefix),
+		http.HandlerFunc(handlers.PayMongoGetPaymentIntent),
+	)
+
 }
