@@ -5,6 +5,7 @@ import (
 	"library/go/database"
 	"library/go/logger"
 	"library/go/models"
+	"library/go/password"
 	"library/go/responses"
 	"library/go/structs"
 	"net/http"
@@ -29,8 +30,8 @@ func CreateStudent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Validate required fields
-	if req.Name == "" || req.RFID == "" {
-		responses.ErrorResponse(w, http.StatusBadRequest, "Name and RFID are required")
+	if req.Name == "" || req.RFID == "" || req.Pin == "" {
+		responses.ErrorResponse(w, http.StatusBadRequest, "Name, RFID, and PIN are required")
 		return
 	}
 
@@ -55,11 +56,26 @@ func CreateStudent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// pin only needs to be 4 digits, so we can enforce that here
+	if len(req.Pin) != 4 {
+		responses.ErrorResponse(w, http.StatusBadRequest, "PIN must be exactly 4 digits")
+		return
+	}
+
+	// Hash pin
+	hashedPin, err := password.HashPassword(req.Pin)
+	if err != nil {
+		studentLog.Error("failed to hash pin", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to create student")
+		return
+	}
+
 	// Create student
 	newStudent := models.Student{
-		Name: req.Name,
-		RFID: req.RFID,
-		Load: req.Load,
+		Name:    req.Name,
+		RFID:    req.RFID,
+		PinHash: hashedPin,
+		Load:    req.Load,
 	}
 
 	if err := db.Create(&newStudent).Error; err != nil {
@@ -218,13 +234,28 @@ func UpdateStudent(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// pin only needs to be 4 digits, so we can enforce that here
+	if len(req.Pin) != 4 {
+		responses.ErrorResponse(w, http.StatusBadRequest, "PIN must be exactly 4 digits")
+		return
+	}
+
 	// Update fields
-	updates := make(map[string]interface{})
+	updates := make(map[string]any)
 	if req.Name != "" {
 		updates["name"] = req.Name
 	}
 	if req.RFID != "" {
 		updates["rfid"] = req.RFID
+	}
+	if req.Pin != "" {
+		hashedPin, err := password.HashPassword(req.Pin)
+		if err != nil {
+			studentLog.Error("failed to hash pin", zap.Error(err))
+			responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to update student")
+			return
+		}
+		updates["pin_hash"] = hashedPin
 	}
 
 	// Update student
@@ -435,6 +466,58 @@ func GetStudentByRFID(w http.ResponseWriter, r *http.Request) {
 	// Build response
 	res := map[string]any{
 		"load": student.Load,
+	}
+
+	responses.SuccessResponse(w, res)
+}
+
+func ValidateStudentPin(w http.ResponseWriter, r *http.Request) {
+	defer studentLog.Sync()
+
+	// Get RFID from query parameter
+	rfid := r.URL.Query().Get("rfid")
+	if rfid == "" {
+		responses.ErrorResponse(w, http.StatusBadRequest, "RFID query parameter is required")
+		return
+	}
+
+	// Get PIN from query parameter
+	pin := r.URL.Query().Get("pin")
+	if pin == "" {
+		responses.ErrorResponse(w, http.StatusBadRequest, "PIN query parameter is required")
+		return
+	}
+
+	// Get database connection
+	db, err := database.GetDB()
+	if err != nil {
+		studentLog.Error("failed to get database connection", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Database connection error")
+		return
+	}
+
+	// Fetch student by PIN
+	var student models.Student
+	if err := db.Where("rfid = ?", rfid).First(&student).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			responses.ErrorResponse(w, http.StatusNotFound, "Student not found")
+			return
+		}
+		studentLog.Error("failed to fetch student", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to fetch student")
+		return
+	}
+
+	// Validate PIN
+	pinHash := student.PinHash
+	if err := password.ValidatePassword(pinHash, pin); err != nil {
+		responses.ErrorResponse(w, http.StatusUnauthorized, "Invalid PIN")
+		return
+	}
+
+	// Build response
+	res := map[string]any{
+		"valid": true,
 	}
 
 	responses.SuccessResponse(w, res)

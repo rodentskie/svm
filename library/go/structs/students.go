@@ -4,11 +4,13 @@ type CreateStudentRequest struct {
 	Name string  `json:"name" binding:"required"`
 	RFID string  `json:"rfid" binding:"required"`
 	Load float64 `json:"load"`
+	Pin  string  `json:"pin" binding:"required"`
 }
 
 type UpdateStudentRequest struct {
 	Name string `json:"name"`
 	RFID string `json:"rfid"`
+	Pin  string `json:"pin"`
 }
 
 type StudentLoadRequest struct {

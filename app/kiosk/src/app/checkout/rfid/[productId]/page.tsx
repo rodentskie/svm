@@ -8,7 +8,8 @@ import { EmptyState } from '@svm/components/empty-state';
 import { Skeleton } from '@svm/components/skeleton';
 import { Tag } from '@svm/components/tag';
 import { Product } from '../../../../types';
-import { fetchProductById } from '../../../../lib/api';
+import { fetchProductById, validateStudentPIN } from '../../../../lib/api';
+import { PINInputDialog } from '../../../../components/PINInputDialog';
 
 export default function RFIDCheckoutPage() {
   const params = useParams();
@@ -21,7 +22,9 @@ export default function RFIDCheckoutPage() {
   const [product, setProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isConfirming, setIsConfirming] = useState(false);
+  const [isPINDialogOpen, setIsPINDialogOpen] = useState(false);
+  const [isPINValidating, setIsPINValidating] = useState(false);
+  const [pinError, setPinError] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadProduct() {
@@ -49,11 +52,28 @@ export default function RFIDCheckoutPage() {
   const handleConfirm = () => {
     if (!product || load < product.price) return;
     
-    setIsConfirming(true);
-    
-    // Redirect to transaction complete page
-    const completeUrl = `/product/${product.id}/transaction/complete?payment_method=rfid&location=${encodeURIComponent(product.location)}&rfid=${encodeURIComponent(rfid)}&paymentIntentId=`;
-    router.push(completeUrl);
+    // Open PIN dialog for validation
+    setIsPINDialogOpen(true);
+    setPinError(null);
+  };
+
+  const handlePINSubmit = async (pin: string, product: Product) => {
+    try {
+      setIsPINValidating(true);
+      setPinError(null);
+      
+      // Validate PIN
+      await validateStudentPIN(rfid, pin);
+      
+      // PIN is valid, proceed to transaction complete page
+      setIsPINDialogOpen(false);
+      const completeUrl = `/product/${product.id}/transaction/complete?payment_method=rfid&location=${encodeURIComponent(product.location)}&rfid=${encodeURIComponent(rfid)}&paymentIntentId=`;
+      router.push(completeUrl);
+    } catch (err) {
+      setPinError(err instanceof Error ? err.message : 'Failed to validate PIN');
+    } finally {
+      setIsPINValidating(false);
+    }
   };
 
   const canAfford = product ? load >= product.price : false;
@@ -160,19 +180,6 @@ export default function RFIDCheckoutPage() {
                   </Flex>
                 </Box>
 
-                {/* RFID Info */}
-                <Box borderTopWidth="1px" pt={4}>
-                  <Flex align="center" gap={2} mb={3}>
-                    <FaIdCard />
-                    <Text fontSize="sm" color="fg.muted">
-                      RFID Number
-                    </Text>
-                  </Flex>
-                  <Text fontSize="lg" fontWeight="mono">
-                    {rfid}
-                  </Text>
-                </Box>
-
                 {/* Load Balance */}
                 <Box borderTopWidth="1px" pt={4}>
                   <Flex align="center" gap={2} mb={3}>
@@ -245,8 +252,7 @@ export default function RFIDCheckoutPage() {
                   onClick={handleConfirm}
                   flex={1}
                   size="lg"
-                  disabled={!canAfford || isConfirming}
-                  loading={isConfirming}
+                  disabled={!canAfford}
                 >
                   Confirm Payment
                 </Button>
@@ -255,6 +261,20 @@ export default function RFIDCheckoutPage() {
           </Card.Root>
         </Stack>
       </Container>
+
+      {/* PIN Input Dialog */}
+      <PINInputDialog
+        open={isPINDialogOpen}
+        onClose={() => {
+          setIsPINDialogOpen(false);
+          setPinError(null);
+        }}
+        product={product}
+        rfid={rfid}
+        onSubmit={handlePINSubmit}
+        isLoading={isPINValidating}
+        error={pinError}
+      />
     </Box>
   );
 }
