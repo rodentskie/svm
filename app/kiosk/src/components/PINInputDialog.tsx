@@ -190,7 +190,7 @@ export function PINInputDialog({
                     <Button
                       size="lg"
                       variant="outline"
-                      colorScheme="red"
+                      colorPalette="red"
                       onClick={handleClear}
                       disabled={isLoading}
                       fontSize="sm"
@@ -211,7 +211,7 @@ export function PINInputDialog({
                     <Button
                       size="lg"
                       variant="outline"
-                      colorScheme="gray"
+                      colorPalette="gray"
                       onClick={handleBackspace}
                       disabled={isLoading || pin.length === 0}
                       height="60px"
@@ -248,7 +248,7 @@ export function PINInputDialog({
             Cancel
           </Button>
           <Button
-            colorScheme="green"
+            colorPalette="green"
             onClick={handleSubmit}
             loading={isLoading}
             disabled={pin.length !== 4 || isLoading}

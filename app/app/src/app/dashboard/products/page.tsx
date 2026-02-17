@@ -549,7 +549,7 @@ export default function ProductsPage() {
                           <Button
                             size="sm"
                             variant="outline"
-                            colorScheme="green"
+                            colorPalette="green"
                             onClick={() => handleEditClick(product)}
                           >
                             <FiEdit2 />
@@ -558,7 +558,7 @@ export default function ProductsPage() {
                           <Button
                             size="sm"
                             variant="outline"
-                            colorScheme="red"
+                            colorPalette="red"
                             onClick={() => handleDeleteClick(product)}
                           >
                             <FiTrash2 />

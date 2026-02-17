@@ -102,7 +102,7 @@ export default function LoginPage() {
 
               <Button
                 type="submit"
-                colorScheme="green"
+                colorPalette="green"
                 w="full"
                 loading={loading}
                 mt={2}

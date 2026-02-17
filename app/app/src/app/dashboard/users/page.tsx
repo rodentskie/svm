@@ -414,7 +414,7 @@ export default function UsersPage() {
                 Cancel
               </Button>
               <Button
-                colorScheme="green"
+                colorPalette="green"
                 onClick={handleCreateUser}
                 loading={isSubmitting}
               >
@@ -524,7 +524,7 @@ export default function UsersPage() {
                 Cancel
               </Button>
               <Button
-                colorScheme="green"
+                colorPalette="green"
                 onClick={handleUpdateUser}
                 loading={isSubmitting}
               >
@@ -579,7 +579,7 @@ export default function UsersPage() {
                         <Button
                           size="sm"
                           variant="outline"
-                          colorScheme="green"
+                          colorPalette="green"
                           onClick={() => handleEditClick(user)}
                         >
                           <FiEdit2 />
@@ -588,7 +588,7 @@ export default function UsersPage() {
                         <Button
                           size="sm"
                           variant="outline"
-                          colorScheme="red"
+                          colorPalette="red"
                           onClick={() => handleDeleteClick(user)}
                         >
                           <FiTrash2 />

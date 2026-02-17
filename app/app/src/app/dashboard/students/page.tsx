@@ -586,7 +586,7 @@ export default function StudentsPage() {
                           <Button
                             size="sm"
                             variant="outline"
-                            colorScheme="green"
+                            colorPalette="green"
                             onClick={() => handleAddLoadClick(student)}
                           >
                             <FiDollarSign />
@@ -595,7 +595,7 @@ export default function StudentsPage() {
                           <Button
                             size="sm"
                             variant="outline"
-                            colorScheme="green"
+                            colorPalette="green"
                             onClick={() => handleEditClick(student)}
                           >
                             <FiEdit2 />
@@ -604,7 +604,7 @@ export default function StudentsPage() {
                           <Button
                             size="sm"
                             variant="outline"
-                            colorScheme="red"
+                            colorPalette="red"
                             onClick={() => handleDeleteClick(student)}
                           >
                             <FiTrash2 />
