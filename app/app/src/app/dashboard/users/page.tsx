@@ -324,8 +324,8 @@ export default function UsersPage() {
       <VStack align="stretch" gap={6}>
         {/* Header */}
         <HStack justify="space-between">
-          <Heading size="lg">Users Management</Heading>
-          <Button colorScheme="blue" onClick={() => setIsDialogOpen(true)}>
+          <Heading size="lg" color="green.600" _dark={{ color: "green.400" }}>Users Managements</Heading>
+          <Button colorPalette="green" onClick={() => setIsDialogOpen(true)}>
             <FiPlus />
             Add New User
           </Button>
@@ -336,7 +336,7 @@ export default function UsersPage() {
           <DialogBackdrop />
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Add New User</DialogTitle>
+              <DialogTitle color="green.600" _dark={{ color: "green.400" }}>Add New User</DialogTitle>
             </DialogHeader>
             <DialogCloseTrigger />
             <DialogBody>
@@ -414,7 +414,7 @@ export default function UsersPage() {
                 Cancel
               </Button>
               <Button
-                colorScheme="blue"
+                colorScheme="green"
                 onClick={handleCreateUser}
                 loading={isSubmitting}
               >
@@ -445,7 +445,7 @@ export default function UsersPage() {
           <DialogBackdrop />
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Edit User</DialogTitle>
+              <DialogTitle color="green.600" _dark={{ color: "green.400" }}>Edit User</DialogTitle>
             </DialogHeader>
             <DialogCloseTrigger />
             <DialogBody>
@@ -524,7 +524,7 @@ export default function UsersPage() {
                 Cancel
               </Button>
               <Button
-                colorScheme="blue"
+                colorScheme="green"
                 onClick={handleUpdateUser}
                 loading={isSubmitting}
               >
@@ -579,7 +579,7 @@ export default function UsersPage() {
                         <Button
                           size="sm"
                           variant="outline"
-                          colorScheme="blue"
+                          colorScheme="green"
                           onClick={() => handleEditClick(user)}
                         >
                           <FiEdit2 />

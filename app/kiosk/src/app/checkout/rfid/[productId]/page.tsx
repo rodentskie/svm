@@ -248,7 +248,7 @@ export default function RFIDCheckoutPage() {
                   Cancel
                 </Button>
                 <Button
-                  colorScheme="blue"
+                  colorScheme="green"
                   onClick={handleConfirm}
                   flex={1}
                   size="lg"

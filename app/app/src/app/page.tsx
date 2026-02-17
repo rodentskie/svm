@@ -64,7 +64,7 @@ export default function LoginPage() {
     >
       <Card.Root maxW="md" w="full">
         <Card.Header>
-          <Heading size="xl" textAlign="center">
+          <Heading size="xl" textAlign="center" color="green.600" _dark={{ color: "green.400" }}>
             Smart Vending Machine
           </Heading>
           <Text color="fg.muted" textAlign="center" mt={2}>
@@ -102,7 +102,7 @@ export default function LoginPage() {
 
               <Button
                 type="submit"
-                colorScheme="blue"
+                colorScheme="green"
                 w="full"
                 loading={loading}
                 mt={2}

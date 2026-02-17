@@ -124,7 +124,7 @@ export function RFIDInputDialog({
             Cancel
           </Button>
           <Button
-            colorScheme="blue"
+            colorScheme="green"
             onClick={handleSubmit}
             loading={isLoading}
             disabled={!rfid.trim() || isLoading}

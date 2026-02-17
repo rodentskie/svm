@@ -248,7 +248,7 @@ export function PINInputDialog({
             Cancel
           </Button>
           <Button
-            colorScheme="blue"
+            colorScheme="green"
             onClick={handleSubmit}
             loading={isLoading}
             disabled={pin.length !== 4 || isLoading}

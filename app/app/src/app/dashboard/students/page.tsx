@@ -385,8 +385,8 @@ export default function StudentsPage() {
         <VStack align="stretch" gap={6}>
           {/* Header */}
           <HStack justify="space-between">
-            <Heading size="lg">Students Management</Heading>
-            <Button colorScheme="blue" onClick={() => setIsDialogOpen(true)}>
+            <Heading size="lg" color="green.600" _dark={{ color: "green.400" }}>Students Management</Heading>
+            <Button colorPalette="green" onClick={() => setIsDialogOpen(true)}>
               <FiPlus />
               Add New Student
             </Button>
@@ -397,7 +397,7 @@ export default function StudentsPage() {
             <DialogBackdrop />
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Add New Student</DialogTitle>
+                <DialogTitle color="green.600" _dark={{ color: "green.400" }}>Add New Student</DialogTitle>
               </DialogHeader>
               <DialogCloseTrigger />
               <DialogBody>
@@ -439,7 +439,7 @@ export default function StudentsPage() {
                 >
                   Cancel
                 </Button>
-                <Button colorScheme="blue" onClick={handleCreateStudent} loading={isSubmitting}>
+                <Button colorPalette="green" onClick={handleCreateStudent} loading={isSubmitting}>
                   Create Student
                 </Button>
               </DialogFooter>
@@ -451,7 +451,7 @@ export default function StudentsPage() {
             <DialogBackdrop />
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Edit Student</DialogTitle>
+                <DialogTitle color="green.600" _dark={{ color: "green.400" }}>Edit Student</DialogTitle>
               </DialogHeader>
               <DialogCloseTrigger />
               <DialogBody>
@@ -484,7 +484,7 @@ export default function StudentsPage() {
                 >
                   Cancel
                 </Button>
-                <Button colorScheme="blue" onClick={handleUpdateStudent} loading={isSubmitting}>
+                <Button colorPalette="green" onClick={handleUpdateStudent} loading={isSubmitting}>
                   Update Student
                 </Button>
               </DialogFooter>
@@ -526,7 +526,7 @@ export default function StudentsPage() {
                 >
                   Cancel
                 </Button>
-                <Button colorScheme="green" onClick={handleAddLoad} loading={isSubmitting}>
+                <Button colorPalette="green" onClick={handleAddLoad} loading={isSubmitting}>
                   Add Load
                 </Button>
               </DialogFooter>
@@ -595,7 +595,7 @@ export default function StudentsPage() {
                           <Button
                             size="sm"
                             variant="outline"
-                            colorScheme="blue"
+                            colorScheme="green"
                             onClick={() => handleEditClick(student)}
                           >
                             <FiEdit2 />

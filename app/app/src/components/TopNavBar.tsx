@@ -29,7 +29,7 @@ export function TopNavBar({
       {/* Left: Logo */}
       <Flex alignItems="center" gap={2}>
         <VendingMachineLogo height={50} width={30} />
-        <Heading size={'sm'}>S.V.M.</Heading>
+        <Heading size={'sm'} color="green.600" _dark={{ color: "green.400" }}>S.V.M.</Heading>
       </Flex>
 
       {/* Right: Dark/Light Mode & Avatar */}

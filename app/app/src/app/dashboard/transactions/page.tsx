@@ -292,7 +292,7 @@ export default function TransactionsPage() {
         <VStack align="stretch" gap={6}>
           {/* Header */}
           <HStack justify="space-between">
-            <Heading size="lg">Transactions</Heading>
+            <Heading size="lg" color="green.600" _dark={{ color: "green.400" }}>Transactions</Heading>
             <HStack gap={2}>
               <Button
                 colorScheme="green"
@@ -303,7 +303,7 @@ export default function TransactionsPage() {
                 <FiDownload />
                 Export to Excel
               </Button>
-              <Button colorScheme="blue" onClick={() => fetchTransactions()}>
+              <Button colorPalette="green" onClick={() => fetchTransactions()}>
                 <FiRefreshCw />
                 Refresh
               </Button>
@@ -366,7 +366,7 @@ export default function TransactionsPage() {
                       <VStack align="stretch" gap={2}>
                         <HStack justify="space-between">
                           <Text fontWeight="medium">Type:</Text>
-                          <Badge colorScheme="blue">
+                          <Badge colorScheme="green">
                             {selectedTransaction.transaction_type}
                           </Badge>
                         </HStack>
@@ -515,7 +515,7 @@ export default function TransactionsPage() {
                       </Table.Cell>
                       <Table.Cell>{transaction.quantity}</Table.Cell>
                       <Table.Cell>
-                        <Badge colorScheme="blue">{transaction.transaction_type}</Badge>
+                        <Badge colorScheme="green">{transaction.transaction_type}</Badge>
                       </Table.Cell>
                       <Table.Cell>
                         <Badge colorScheme={getPaymentMethodBadge(transaction.payment_method)}>
@@ -538,7 +538,7 @@ export default function TransactionsPage() {
                           <Button
                             size="sm"
                             variant="outline"
-                            colorScheme="blue"
+                            colorScheme="green"
                             onClick={() => handleViewDetails(transaction)}
                           >
                             <FiEye />
