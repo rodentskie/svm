@@ -365,10 +365,6 @@ export default function TransactionsPage() {
                       </Heading>
                       <VStack align="stretch" gap={2}>
                         <HStack justify="space-between">
-                          <Text fontWeight="medium">Transaction ID:</Text>
-                          <Text>{selectedTransaction.id}</Text>
-                        </HStack>
-                        <HStack justify="space-between">
                           <Text fontWeight="medium">Type:</Text>
                           <Badge colorScheme="blue">
                             {selectedTransaction.transaction_type}
@@ -442,10 +438,6 @@ export default function TransactionsPage() {
                         Payment Details
                       </Heading>
                       <VStack align="stretch" gap={2}>
-                        <HStack justify="space-between">
-                          <Text fontWeight="medium">Details ID:</Text>
-                          <Text>{selectedTransaction.transaction_details.id}</Text>
-                        </HStack>
                         {selectedTransaction.transaction_details.rfid && (
                           <HStack justify="space-between">
                             <Text fontWeight="medium">RFID:</Text>
@@ -490,7 +482,6 @@ export default function TransactionsPage() {
             <Table.Root size="lg" variant="outline">
               <Table.Header>
                 <Table.Row bg="gray.50" _dark={{ bg: 'gray.700' }}>
-                  <Table.ColumnHeader>ID</Table.ColumnHeader>
                   <Table.ColumnHeader>Product</Table.ColumnHeader>
                   <Table.ColumnHeader>Quantity</Table.ColumnHeader>
                   <Table.ColumnHeader>Type</Table.ColumnHeader>
@@ -514,7 +505,6 @@ export default function TransactionsPage() {
                       key={transaction.id}
                       _hover={{ bg: 'gray.50', _dark: { bg: 'gray.700' } }}
                     >
-                      <Table.Cell fontWeight="medium">{transaction.id}</Table.Cell>
                       <Table.Cell>
                         <VStack align="start" gap={0}>
                           <Text fontWeight="medium">{transaction.product.name}</Text>
