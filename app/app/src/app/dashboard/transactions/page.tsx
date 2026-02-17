@@ -12,7 +12,8 @@ import {
   VStack,
   Badge,
 } from '@chakra-ui/react';
-import { FiEye, FiRefreshCw } from 'react-icons/fi';
+import { FiEye, FiRefreshCw, FiDownload } from 'react-icons/fi';
+import * as XLSX from 'xlsx';
 import { toaster, Toaster } from '@svm/components/toaster';
 import {
   DialogRoot,
@@ -86,6 +87,7 @@ export default function TransactionsPage() {
   const [error, setError] = useState<string | null>(null);
   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
 
   useEffect(() => {
     fetchTransactions();
@@ -147,6 +149,95 @@ export default function TransactionsPage() {
     fetchTransactions(pagination.limit, newOffset);
   };
 
+  const handleExportToExcel = async () => {
+    try {
+      setIsExporting(true);
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/v1';
+
+      // Fetch all transactions (using a large limit to get all data)
+      const response = await fetch(
+        `${apiUrl}/transactions?limit=${pagination.total}&offset=0`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch transactions for export');
+      }
+
+      const result = await response.json();
+      const allTransactions: Transaction[] = result.data || [];
+
+      // Format data for Excel
+      const excelData = allTransactions.map((transaction) => ({
+        'Transaction ID': transaction.id,
+        'Product Name': transaction.product.name,
+        'Product Code': transaction.product.code,
+        'Product Location': transaction.product.location,
+        'Quantity': transaction.quantity,
+        'Unit Price': transaction.product.price,
+        'Total Amount': transaction.total_amount,
+        'Transaction Type': transaction.transaction_type,
+        'Payment Method': transaction.payment_method,
+        'Status': transaction.status,
+        'RFID': transaction.transaction_details?.rfid || 'N/A',
+        'Payment Intent ID': transaction.transaction_details?.payment_intent_id || 'N/A',
+        'Date': new Date(transaction.created_at).toLocaleString(),
+      }));
+
+      // Create workbook and worksheet
+      const worksheet = XLSX.utils.json_to_sheet(excelData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Transactions');
+
+      // Set column widths for better readability
+      const columnWidths = [
+        { wch: 15 }, // Transaction ID
+        { wch: 25 }, // Product Name
+        { wch: 15 }, // Product Code
+        { wch: 18 }, // Product Location
+        { wch: 10 }, // Quantity
+        { wch: 12 }, // Unit Price
+        { wch: 15 }, // Total Amount
+        { wch: 18 }, // Transaction Type
+        { wch: 18 }, // Payment Method
+        { wch: 12 }, // Status
+        { wch: 15 }, // RFID
+        { wch: 30 }, // Payment Intent ID
+        { wch: 20 }, // Date
+      ];
+      worksheet['!cols'] = columnWidths;
+
+      // Generate filename with timestamp
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+      const filename = `transaction-data-${timestamp}.xlsx`;
+
+      // Download file
+      XLSX.writeFile(workbook, filename);
+
+      toaster.create({
+        title: 'Success',
+        description: `Exported ${allTransactions.length} transactions to ${filename}`,
+        type: 'success',
+        duration: 3000,
+      });
+    } catch (err) {
+      toaster.create({
+        title: 'Error',
+        description: err instanceof Error ? err.message : 'Failed to export transactions',
+        type: 'error',
+        duration: 3000,
+      });
+      console.error('Error exporting transactions:', err);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed':
@@ -202,10 +293,21 @@ export default function TransactionsPage() {
           {/* Header */}
           <HStack justify="space-between">
             <Heading size="lg">Transactions</Heading>
-            <Button colorScheme="blue" onClick={() => fetchTransactions()}>
-              <FiRefreshCw />
-              Refresh
-            </Button>
+            <HStack gap={2}>
+              <Button
+                colorScheme="green"
+                onClick={handleExportToExcel}
+                loading={isExporting}
+                disabled={pagination.total === 0}
+              >
+                <FiDownload />
+                Export to Excel
+              </Button>
+              <Button colorScheme="blue" onClick={() => fetchTransactions()}>
+                <FiRefreshCw />
+                Refresh
+              </Button>
+            </HStack>
           </HStack>
 
           {/* Pagination Controls */}
