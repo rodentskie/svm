@@ -71,7 +71,7 @@ export function ProductGrid({ products, onAddToCart, isLoading = false }: Produc
               </Box>
 
               <Box>
-                <Text fontSize="2xl" fontWeight="bold" color="blue.600">
+                <Text fontSize="2xl" fontWeight="bold" color="green.600" _dark={{ color: "green.400" }}>
                   ₱{product.price.toFixed(2)}
                 </Text>
                 <Tag
@@ -88,7 +88,7 @@ export function ProductGrid({ products, onAddToCart, isLoading = false }: Produc
               </Box>
 
               <Button
-                colorPalette="blue"
+                colorPalette="green"
                 size="md"
                 width="100%"
                 disabled={product.quantity === 0}

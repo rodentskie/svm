@@ -85,7 +85,7 @@ export default function TransactionCompletePage() {
             </Text>
           </Stack>
 
-          <Button colorPalette="blue" size="lg" onClick={handleGoHome} mt={4}>
+          <Button colorPalette="green" size="lg" onClick={handleGoHome} mt={4}>
             Back to Home
           </Button>
         </Stack>

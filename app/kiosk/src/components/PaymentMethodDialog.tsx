@@ -76,7 +76,7 @@ export function PaymentMethodDialog({
     <DialogRoot open={open} onOpenChange={(e) => !e.open && onClose()} size="md">
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Select Payment Method</DialogTitle>
+          <DialogTitle color="green.600" _dark={{ color: "green.400" }}>Select Payment Method</DialogTitle>
           <DialogDescription>
             Choose how you want to pay for {product?.name}
           </DialogDescription>
@@ -99,13 +99,13 @@ export function PaymentMethodDialog({
                   key={method.id}
                   size="xl"
                   variant="outline"
-                  colorPalette="blue"
+                  colorPalette="green"
                   onClick={() => handlePaymentMethodSelect(method)}
                   height="auto"
                   py={6}
                 >
                   <Box display="flex" alignItems="center" gap={4} width="100%">
-                    <Box color="blue.600">{getPaymentIcon(method.name)}</Box>
+                    <Box color="green.600" _dark={{ color: "green.400" }}>{getPaymentIcon(method.name)}</Box>
                     <Box flex={1} textAlign="left">
                       <Text fontSize="lg" fontWeight="bold">
                         {method.name}

@@ -52,7 +52,7 @@ export function CategorySidebar({
       flexShrink={0}
     >
       <Box p={6} borderBottom="1px solid" borderColor="border.subtle">
-        <Text fontSize="2xl" fontWeight="bold">
+        <Text fontSize="2xl" fontWeight="bold" color="green.600" _dark={{ color: "green.400" }}>
           Categories
         </Text>
         <Text fontSize="sm" color="fg.muted" mt={1}>
@@ -66,7 +66,7 @@ export function CategorySidebar({
             key={category.id}
             onClick={() => onCategorySelect(category.id)}
             variant={selectedCategoryId === category.id ? 'solid' : 'ghost'}
-            colorPalette={selectedCategoryId === category.id ? 'blue' : 'gray'}
+            colorPalette={selectedCategoryId === category.id ? 'green' : 'gray'}
             size="lg"
             justifyContent="flex-start"
             width="100%"
