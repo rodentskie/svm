@@ -38,7 +38,8 @@ type Transaction struct {
 	UpdatedAt       time.Time `gorm:"<-:false" json:"updated_at"`
 
 	// Relationships
-	Product Product `gorm:"foreignKey:ProductID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT" json:"product,omitempty"`
+	Product            Product             `gorm:"foreignKey:ProductID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT" json:"product,omitempty"`
+	TransactionDetails *TransactionDetails `gorm:"foreignKey:TransactionId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"transaction_details,omitempty"`
 }
 
 func (Transaction) TableName() string {

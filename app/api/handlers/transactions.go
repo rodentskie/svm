@@ -164,3 +164,77 @@ func CreateTransactionAdjustment(w http.ResponseWriter, r *http.Request) {
 
 	responses.NoContentResponse(w)
 }
+
+func GetAllTransactions(w http.ResponseWriter, r *http.Request) {
+	defer transactionLog.Sync()
+
+	// Get query parameters for pagination
+	limitStr := r.URL.Query().Get("limit")
+	offsetStr := r.URL.Query().Get("offset")
+
+	// Set default values
+	limit := 10
+	offset := 0
+
+	// Parse limit
+	if limitStr != "" {
+		parsedLimit, err := strconv.Atoi(limitStr)
+		if err != nil || parsedLimit <= 0 {
+			responses.ErrorResponse(w, http.StatusBadRequest, "Invalid limit parameter")
+			return
+		}
+		limit = parsedLimit
+	}
+
+	// Parse offset
+	if offsetStr != "" {
+		parsedOffset, err := strconv.Atoi(offsetStr)
+		if err != nil || parsedOffset < 0 {
+			responses.ErrorResponse(w, http.StatusBadRequest, "Invalid offset parameter")
+			return
+		}
+		offset = parsedOffset
+	}
+
+	// Get database connection
+	db, err := database.GetDB()
+	if err != nil {
+		transactionLog.Error("failed to get database connection", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Database connection error")
+		return
+	}
+
+	// Fetch transactions with product and transaction_details relationships
+	var transactions []models.Transaction
+	if err := db.
+		Preload("Product").
+		Preload("TransactionDetails").
+		Limit(limit).
+		Offset(offset).
+		Order("created_at DESC").
+		Find(&transactions).Error; err != nil {
+		transactionLog.Error("failed to fetch transactions", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to fetch transactions")
+		return
+	}
+
+	// Get total count for pagination metadata
+	var total int64
+	if err := db.Model(&models.Transaction{}).Count(&total).Error; err != nil {
+		transactionLog.Error("failed to count transactions", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to count transactions")
+		return
+	}
+
+	// Create response with pagination metadata
+	response := map[string]interface{}{
+		"data": transactions,
+		"pagination": map[string]interface{}{
+			"limit":  limit,
+			"offset": offset,
+			"total":  total,
+		},
+	}
+
+	responses.SuccessResponse(w, response)
+}
