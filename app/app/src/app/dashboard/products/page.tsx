@@ -316,8 +316,8 @@ export default function ProductsPage() {
         <VStack align="stretch" gap={6}>
           {/* Header */}
           <HStack justify="space-between">
-            <Heading size="lg">Products Management</Heading>
-            <Button colorScheme="blue" onClick={() => setIsDialogOpen(true)}>
+            <Heading size="lg" color="green.600" _dark={{ color: "green.400" }}>Products Management</Heading>
+            <Button colorPalette="green" onClick={() => setIsDialogOpen(true)}>
               <FiPlus />
               Add New Product
             </Button>
@@ -328,7 +328,7 @@ export default function ProductsPage() {
             <DialogBackdrop />
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Add New Product</DialogTitle>
+                <DialogTitle color="green.600" _dark={{ color: "green.400" }}>Add New Product</DialogTitle>
               </DialogHeader>
               <DialogCloseTrigger />
               <DialogBody>
@@ -396,7 +396,7 @@ export default function ProductsPage() {
                 >
                   Cancel
                 </Button>
-                <Button colorScheme="blue" onClick={handleCreateProduct} loading={isSubmitting}>
+                <Button colorPalette="green" onClick={handleCreateProduct} loading={isSubmitting}>
                   Create Product
                 </Button>
               </DialogFooter>
@@ -408,7 +408,7 @@ export default function ProductsPage() {
             <DialogBackdrop />
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Edit Product</DialogTitle>
+                <DialogTitle color="green.600" _dark={{ color: "green.400" }}>Edit Product</DialogTitle>
               </DialogHeader>
               <DialogCloseTrigger />
               <DialogBody>
@@ -477,7 +477,7 @@ export default function ProductsPage() {
                 >
                   Cancel
                 </Button>
-                <Button colorScheme="blue" onClick={handleUpdateProduct} loading={isSubmitting}>
+                <Button colorPalette="green" onClick={handleUpdateProduct} loading={isSubmitting}>
                   Update Product
                 </Button>
               </DialogFooter>
@@ -549,7 +549,7 @@ export default function ProductsPage() {
                           <Button
                             size="sm"
                             variant="outline"
-                            colorScheme="blue"
+                            colorPalette="green"
                             onClick={() => handleEditClick(product)}
                           >
                             <FiEdit2 />
@@ -558,7 +558,7 @@ export default function ProductsPage() {
                           <Button
                             size="sm"
                             variant="outline"
-                            colorScheme="red"
+                            colorPalette="red"
                             onClick={() => handleDeleteClick(product)}
                           >
                             <FiTrash2 />

@@ -62,7 +62,7 @@ export function DeleteConfirmDialog({
             Cancel
           </Button>
           <Button
-            colorScheme="red"
+            colorPalette="red"
             onClick={onConfirm}
             loading={isSubmitting}
             disabled={confirmText !== 'delete'}

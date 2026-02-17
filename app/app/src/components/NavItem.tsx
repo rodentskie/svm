@@ -23,9 +23,16 @@ export function NavItem({
       p={3}
       borderRadius="md"
       cursor="pointer"
-      bg={isActive ? 'bg.muted' : undefined}
-      _hover={{ bg: 'bg.muted' }}
+      bg={isActive ? 'green.600' : undefined}
+      _dark={{ bg: isActive ? 'green.700' : undefined }}
+      _hover={{
+        bg: isActive ? 'green.700' : 'bg.muted',
+        _dark: { bg: isActive ? 'green.800' : undefined },
+      }}
       justifyContent={isCollapsed ? 'center' : 'flex-start'}
+      color={isActive ? 'white' : undefined}
+      fontWeight={isActive ? 'bold' : 'normal'}
+      transition="all 0.2s"
       onClick={onClick}
     >
       <Center>

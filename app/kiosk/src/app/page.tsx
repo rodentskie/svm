@@ -145,7 +145,7 @@ export default function MainPage() {
           <Stack gap={6}>
             {/* Header */}
             <Box>
-              <Text fontSize="3xl" fontWeight="bold">
+              <Text fontSize="3xl" fontWeight="bold" color="green.600" _dark={{ color: "green.400" }}>
                 {categories.find((c) => c.id === selectedCategoryId)?.name || 'Products'}
               </Text>
               <Text fontSize="sm" color="fg.muted" mt={1}>

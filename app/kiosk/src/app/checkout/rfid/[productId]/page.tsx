@@ -140,7 +140,7 @@ export default function RFIDCheckoutPage() {
 
           {/* Page Header */}
           <Box>
-            <Text fontSize="3xl" fontWeight="bold">
+            <Text fontSize="3xl" fontWeight="bold" color="green.600" _dark={{ color: "green.400" }}>
               RFID Payment
             </Text>
             <Text fontSize="md" color="fg.muted" mt={1}>
@@ -248,7 +248,7 @@ export default function RFIDCheckoutPage() {
                   Cancel
                 </Button>
                 <Button
-                  colorScheme="blue"
+                  colorPalette="green"
                   onClick={handleConfirm}
                   flex={1}
                   size="lg"

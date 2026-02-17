@@ -202,7 +202,7 @@ export default function EWalletCheckoutPage() {
 
           {/* Header */}
           <Box>
-            <Text fontSize="3xl" fontWeight="bold">
+            <Text fontSize="3xl" fontWeight="bold" color="green.600" _dark={{ color: "green.400" }}>
               E-Wallet Checkout
             </Text>
             <Text fontSize="sm" color="fg.muted" mt={1}>
@@ -245,7 +245,7 @@ export default function EWalletCheckoutPage() {
                     <Text fontSize="lg" fontWeight="medium">
                       Total Amount
                     </Text>
-                    <Text fontSize="3xl" fontWeight="bold" color="blue.600">
+                    <Text fontSize="3xl" fontWeight="bold" color="green.600" _dark={{ color: "green.400" }}>
                       ₱{product.price.toFixed(2)}
                     </Text>
                   </Flex>
@@ -289,7 +289,7 @@ export default function EWalletCheckoutPage() {
               Cancel
             </Button>
             <Button
-              colorPalette="blue"
+              colorPalette="green"
               size="lg"
               flex={2}
               disabled={product.quantity === 0}
@@ -318,13 +318,13 @@ export default function EWalletCheckoutPage() {
               <Button
                 size="xl"
                 variant="outline"
-                colorPalette="blue"
+                colorPalette="green"
                 onClick={() => handleWalletSelect('gcash')}
                 height="auto"
                 py={6}
               >
                 <Box display="flex" alignItems="center" gap={4} width="100%">
-                  <Box color="blue.600">
+                  <Box color="green.600" _dark={{ color: "green.400" }}>
                     <FaWallet size={24} />
                   </Box>
                   <Box flex={1} textAlign="left">
