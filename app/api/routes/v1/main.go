@@ -88,6 +88,11 @@ func MainRoutes(prefix string, mux *http.ServeMux) {
 
 	// transactions
 	mux.Handle(
+		fmt.Sprintf("GET /%s/transactions", prefix),
+		http.HandlerFunc(handlers.GetAllTransactions),
+	)
+
+	mux.Handle(
 		fmt.Sprintf("POST /%s/transactions", prefix),
 		http.HandlerFunc(handlers.CreateTransaction),
 	)
