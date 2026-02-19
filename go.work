@@ -3,6 +3,7 @@ go 1.25
 use (
 	./app/api
 	./app/migrations
+	./app/ws
 	./library/go/database
 	./library/go/env
 	./library/go/jwt
