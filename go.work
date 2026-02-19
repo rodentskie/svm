@@ -13,4 +13,5 @@ use (
 	./library/go/responses
 	./library/go/structs
 	./library/go/validate
+	./library/go/wss
 )

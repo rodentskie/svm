@@ -3,10 +3,12 @@ package handlers
 import (
 	"encoding/json"
 	"library/go/database"
+	"library/go/env"
 	"library/go/logger"
 	"library/go/models"
 	"library/go/responses"
 	"library/go/structs"
+	"library/go/wss"
 	"net/http"
 	"strconv"
 
@@ -86,6 +88,29 @@ func CreateTransaction(w http.ResponseWriter, r *http.Request) {
 		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to create transaction details")
 		return
 	}
+
+	// broadcast to websocket clients
+	wsHost := env.GetEnv("WS_HOST", "ws://localhost:8081/ws")
+	wsClient, err := wss.Connect(wsHost)
+	if err != nil {
+		transactionLog.Error("failed to connect to websocket server", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to connect to websocket server")
+		return
+	}
+	defer wsClient.Close()
+
+	broadcast := structs.TransactionBroadcast{
+		IsPurchase: req.Type == "purchase",
+		Location:   req.Location,
+	}
+
+	jsonString, err := json.Marshal(broadcast)
+	if err != nil {
+		transactionLog.Error("failed to marshal transaction to JSON", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to marshal transaction data")
+		return
+	}
+	wsClient.SendJSON(string(jsonString))
 
 	responses.NoContentResponse(w)
 }

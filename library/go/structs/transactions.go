@@ -33,3 +33,9 @@ type AttachPaymentIntent struct {
 type GetPaymentIntent struct {
 	PaymentIntentID string `json:"payment_intent_id" validate:"required"`
 }
+
+// for websocket broadcast
+type TransactionBroadcast struct {
+	IsPurchase bool   `json:"is_purchase"`
+	Location   string `json:"location"`
+}
