@@ -103,14 +103,7 @@ func CreateTransaction(w http.ResponseWriter, r *http.Request) {
 		IsPurchase: req.Type == "purchase",
 		Location:   req.Location,
 	}
-
-	jsonString, err := json.Marshal(broadcast)
-	if err != nil {
-		transactionLog.Error("failed to marshal transaction to JSON", zap.Error(err))
-		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to marshal transaction data")
-		return
-	}
-	wsClient.SendJSON(string(jsonString))
+	wsClient.SendJSON(broadcast)
 
 	responses.NoContentResponse(w)
 }
