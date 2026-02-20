@@ -5,6 +5,7 @@ CREATE TABLE students_transaction_history (
     type VARCHAR(20) NOT NULL CHECK (type IN ('load', 'purchase', 'refund')),
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    is_read BOOLEAN NOT NULL DEFAULT FALSE,
     FOREIGN KEY (student_id) REFERENCES students(id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
