@@ -55,3 +55,5 @@ snippets/*.tsx
 
 # go compiled output
 app/api/app
+app/migrations/app
+app/ws/app

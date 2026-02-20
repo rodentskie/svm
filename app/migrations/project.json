@@ -8,7 +8,8 @@
     "build": {
       "executor": "@nx-go/nx-go:build",
       "options": {
-        "main": "{projectRoot}/main.go"
+        "main": "{projectRoot}/main.go",
+        "outputPath": "{projectRoot}/app"
       }
     },
     "serve": {
@@ -43,6 +44,9 @@
       "options": {
         "main": "{projectRoot}/main.go drop"
       }
+    },
+    "docker": {
+      "command": "cd {projectRoot}/ && make docker"
     }
   }
 }
