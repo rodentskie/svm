@@ -75,7 +75,6 @@ func CreateStudent(w http.ResponseWriter, r *http.Request) {
 		Name:    req.Name,
 		RFID:    req.RFID,
 		PinHash: hashedPin,
-		Load:    req.Load,
 	}
 
 	if err := db.Create(&newStudent).Error; err != nil {
