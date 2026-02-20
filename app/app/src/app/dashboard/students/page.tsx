@@ -39,7 +39,6 @@ interface Student {
 interface CreateStudentForm {
   name: string;
   RFID: string;
-  load: string;
 }
 
 interface UpdateStudentForm {
@@ -67,7 +66,6 @@ export default function StudentsPage() {
   const [createFormData, setCreateFormData] = useState<CreateStudentForm>({
     name: '',
     RFID: '',
-    load: '0',
   });
   const [updateFormData, setUpdateFormData] = useState<UpdateStudentForm>({
     name: '',
@@ -126,7 +124,6 @@ export default function StudentsPage() {
     setCreateFormData({
       name: '',
       RFID: '',
-      load: '0',
     });
   };
 
@@ -158,7 +155,6 @@ export default function StudentsPage() {
         body: JSON.stringify({
           name: createFormData.name,
           RFID: createFormData.RFID,
-          load: parseFloat(createFormData.load),
         }),
       });
 
@@ -415,16 +411,6 @@ export default function StudentsPage() {
                       placeholder="Enter RFID"
                       value={createFormData.RFID}
                       onChange={(e) => handleCreateInputChange('RFID', e.target.value)}
-                    />
-                  </Field>
-
-                  <Field label="Initial Load" required>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      placeholder="Enter initial load"
-                      value={createFormData.load}
-                      onChange={(e) => handleCreateInputChange('load', e.target.value)}
                     />
                   </Field>
                 </VStack>
