@@ -52,3 +52,6 @@ out
 
 # snippets
 snippets/*.tsx
+
+# go compiled output
+app/api/app
