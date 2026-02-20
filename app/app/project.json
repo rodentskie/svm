@@ -5,5 +5,9 @@
   "projectType": "application",
   "tags": [],
   "// targets": "to see all targets run: nx show project app --web",
-  "targets": {}
+  "targets": {
+    "docker": {
+      "command": "cd {projectRoot}/ && make docker"
+    }
+  }
 }
