@@ -185,7 +185,7 @@ export default function RFIDCheckoutPage() {
                   <Flex align="center" gap={2} mb={3}>
                     <FaWallet />
                     <Text fontSize="sm" color="fg.muted">
-                      Current Load Balance
+                      Current Balance
                     </Text>
                   </Flex>
                   <Text fontSize="2xl" fontWeight="bold" color={canAfford ? 'green.600' : 'red.600'}>

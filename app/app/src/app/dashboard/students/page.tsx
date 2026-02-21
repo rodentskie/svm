@@ -11,6 +11,7 @@ import {
   HStack,
   VStack,
   Input,
+  Center,
 } from '@chakra-ui/react';
 import { FiPlus, FiEdit2, FiTrash2, FiDollarSign } from 'react-icons/fi';
 import { toaster, Toaster } from '@svm/components/toaster';
@@ -25,6 +26,7 @@ import {
   DialogCloseTrigger,
 } from '@svm/components/dialog';
 import { Field } from '@svm/components/field';
+import { PinInput } from '@svm/components/pin-input';
 import { DeleteConfirmDialog } from '../../../components/DeleteConfirmDialog';
 
 interface Student {
@@ -39,6 +41,7 @@ interface Student {
 interface CreateStudentForm {
   name: string;
   RFID: string;
+  pin: string;
 }
 
 interface UpdateStudentForm {
@@ -66,6 +69,7 @@ export default function StudentsPage() {
   const [createFormData, setCreateFormData] = useState<CreateStudentForm>({
     name: '',
     RFID: '',
+    pin: '',
   });
   const [updateFormData, setUpdateFormData] = useState<UpdateStudentForm>({
     name: '',
@@ -83,7 +87,8 @@ export default function StudentsPage() {
     try {
       setIsLoading(true);
       const token = localStorage.getItem('token');
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/v1';
+      const apiUrl =
+        process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/v1';
 
       const response = await fetch(`${apiUrl}/students`, {
         method: 'GET',
@@ -108,11 +113,17 @@ export default function StudentsPage() {
     }
   };
 
-  const handleCreateInputChange = (field: keyof CreateStudentForm, value: string) => {
+  const handleCreateInputChange = (
+    field: keyof CreateStudentForm,
+    value: string,
+  ) => {
     setCreateFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleUpdateInputChange = (field: keyof UpdateStudentForm, value: string) => {
+  const handleUpdateInputChange = (
+    field: keyof UpdateStudentForm,
+    value: string,
+  ) => {
     setUpdateFormData((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -124,6 +135,7 @@ export default function StudentsPage() {
     setCreateFormData({
       name: '',
       RFID: '',
+      pin: '',
     });
   };
 
@@ -144,7 +156,8 @@ export default function StudentsPage() {
     try {
       setIsSubmitting(true);
       const token = localStorage.getItem('token');
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/v1';
+      const apiUrl =
+        process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/v1';
 
       const response = await fetch(`${apiUrl}/students`, {
         method: 'POST',
@@ -155,6 +168,7 @@ export default function StudentsPage() {
         body: JSON.stringify({
           name: createFormData.name,
           RFID: createFormData.RFID,
+          pin: createFormData.pin,
         }),
       });
 
@@ -176,7 +190,8 @@ export default function StudentsPage() {
     } catch (err) {
       toaster.create({
         title: 'Error',
-        description: err instanceof Error ? err.message : 'Failed to create student',
+        description:
+          err instanceof Error ? err.message : 'Failed to create student',
         type: 'error',
         duration: 3000,
       });
@@ -201,7 +216,8 @@ export default function StudentsPage() {
     try {
       setIsSubmitting(true);
       const token = localStorage.getItem('token');
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/v1';
+      const apiUrl =
+        process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/v1';
 
       const response = await fetch(`${apiUrl}/students/${editingStudent.id}`, {
         method: 'PATCH',
@@ -231,7 +247,8 @@ export default function StudentsPage() {
     } catch (err) {
       toaster.create({
         title: 'Error',
-        description: err instanceof Error ? err.message : 'Failed to update student',
+        description:
+          err instanceof Error ? err.message : 'Failed to update student',
         type: 'error',
         duration: 3000,
       });
@@ -253,18 +270,23 @@ export default function StudentsPage() {
     try {
       setIsSubmitting(true);
       const token = localStorage.getItem('token');
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/v1';
+      const apiUrl =
+        process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/v1';
 
-      const response = await fetch(`${apiUrl}/students/${loadingStudent.id}/load`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+      const response = await fetch(
+        `${apiUrl}/students/${loadingStudent.id}/load`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            load: parseFloat(addLoadFormData.load),
+            reason: "payment"
+          }),
         },
-        body: JSON.stringify({
-          load: parseFloat(addLoadFormData.load),
-        }),
-      });
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -307,7 +329,8 @@ export default function StudentsPage() {
     try {
       setIsSubmitting(true);
       const token = localStorage.getItem('token');
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/v1';
+      const apiUrl =
+        process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/v1';
 
       const response = await fetch(`${apiUrl}/students/${deletingStudent.id}`, {
         method: 'DELETE',
@@ -336,7 +359,8 @@ export default function StudentsPage() {
     } catch (err) {
       toaster.create({
         title: 'Error',
-        description: err instanceof Error ? err.message : 'Failed to delete student',
+        description:
+          err instanceof Error ? err.message : 'Failed to delete student',
         type: 'error',
         duration: 3000,
       });
@@ -350,7 +374,13 @@ export default function StudentsPage() {
     return (
       <>
         <Toaster />
-        <Box p={8} display="flex" justifyContent="center" alignItems="center" minH="400px">
+        <Box
+          p={8}
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          minH="400px"
+        >
           <VStack gap={4}>
             <Spinner size="xl" />
             <Text>Loading students...</Text>
@@ -381,7 +411,9 @@ export default function StudentsPage() {
         <VStack align="stretch" gap={6}>
           {/* Header */}
           <HStack justify="space-between">
-            <Heading size="lg" color="green.600" _dark={{ color: "green.400" }}>Students Management</Heading>
+            <Heading size="lg" color="green.600" _dark={{ color: 'green.400' }}>
+              Students Management
+            </Heading>
             <Button colorPalette="green" onClick={() => setIsDialogOpen(true)}>
               <FiPlus />
               Add New Student
@@ -389,11 +421,16 @@ export default function StudentsPage() {
           </HStack>
 
           {/* Create Student Dialog */}
-          <DialogRoot open={isDialogOpen} onOpenChange={(e) => setIsDialogOpen(e.open)}>
+          <DialogRoot
+            open={isDialogOpen}
+            onOpenChange={(e) => setIsDialogOpen(e.open)}
+          >
             <DialogBackdrop />
             <DialogContent>
               <DialogHeader>
-                <DialogTitle color="green.600" _dark={{ color: "green.400" }}>Add New Student</DialogTitle>
+                <DialogTitle color="green.600" _dark={{ color: 'green.400' }}>
+                  Add New Student
+                </DialogTitle>
               </DialogHeader>
               <DialogCloseTrigger />
               <DialogBody>
@@ -402,7 +439,9 @@ export default function StudentsPage() {
                     <Input
                       placeholder="Enter student name"
                       value={createFormData.name}
-                      onChange={(e) => handleCreateInputChange('name', e.target.value)}
+                      onChange={(e) =>
+                        handleCreateInputChange('name', e.target.value)
+                      }
                     />
                   </Field>
 
@@ -410,9 +449,28 @@ export default function StudentsPage() {
                     <Input
                       placeholder="Enter RFID"
                       value={createFormData.RFID}
-                      onChange={(e) => handleCreateInputChange('RFID', e.target.value)}
+                      onChange={(e) =>
+                        handleCreateInputChange('RFID', e.target.value)
+                      }
                     />
                   </Field>
+
+                  <Center>
+                    <Field label="PIN" required>
+                      <PinInput
+                        count={4}
+                        type="numeric"
+                        mask
+                        value={Array.from(
+                          { length: 4 },
+                          (_, i) => createFormData.pin[i] || '',
+                        )}
+                        onValueChange={(details) =>
+                          handleCreateInputChange('pin', details.value.join(''))
+                        }
+                      />
+                    </Field>
+                  </Center>
                 </VStack>
               </DialogBody>
               <DialogFooter>
@@ -425,7 +483,11 @@ export default function StudentsPage() {
                 >
                   Cancel
                 </Button>
-                <Button colorPalette="green" onClick={handleCreateStudent} loading={isSubmitting}>
+                <Button
+                  colorPalette="green"
+                  onClick={handleCreateStudent}
+                  loading={isSubmitting}
+                >
                   Create Student
                 </Button>
               </DialogFooter>
@@ -433,11 +495,16 @@ export default function StudentsPage() {
           </DialogRoot>
 
           {/* Edit Student Dialog */}
-          <DialogRoot open={isEditDialogOpen} onOpenChange={(e) => setIsEditDialogOpen(e.open)}>
+          <DialogRoot
+            open={isEditDialogOpen}
+            onOpenChange={(e) => setIsEditDialogOpen(e.open)}
+          >
             <DialogBackdrop />
             <DialogContent>
               <DialogHeader>
-                <DialogTitle color="green.600" _dark={{ color: "green.400" }}>Edit Student</DialogTitle>
+                <DialogTitle color="green.600" _dark={{ color: 'green.400' }}>
+                  Edit Student
+                </DialogTitle>
               </DialogHeader>
               <DialogCloseTrigger />
               <DialogBody>
@@ -446,7 +513,9 @@ export default function StudentsPage() {
                     <Input
                       placeholder="Enter student name"
                       value={updateFormData.name}
-                      onChange={(e) => handleUpdateInputChange('name', e.target.value)}
+                      onChange={(e) =>
+                        handleUpdateInputChange('name', e.target.value)
+                      }
                     />
                   </Field>
 
@@ -454,7 +523,9 @@ export default function StudentsPage() {
                     <Input
                       placeholder="Enter RFID"
                       value={updateFormData.RFID}
-                      onChange={(e) => handleUpdateInputChange('RFID', e.target.value)}
+                      onChange={(e) =>
+                        handleUpdateInputChange('RFID', e.target.value)
+                      }
                     />
                   </Field>
                 </VStack>
@@ -470,7 +541,11 @@ export default function StudentsPage() {
                 >
                   Cancel
                 </Button>
-                <Button colorPalette="green" onClick={handleUpdateStudent} loading={isSubmitting}>
+                <Button
+                  colorPalette="green"
+                  onClick={handleUpdateStudent}
+                  loading={isSubmitting}
+                >
                   Update Student
                 </Button>
               </DialogFooter>
@@ -478,23 +553,30 @@ export default function StudentsPage() {
           </DialogRoot>
 
           {/* Add Load Dialog */}
-          <DialogRoot open={isAddLoadDialogOpen} onOpenChange={(e) => setIsAddLoadDialogOpen(e.open)}>
+          <DialogRoot
+            open={isAddLoadDialogOpen}
+            onOpenChange={(e) => setIsAddLoadDialogOpen(e.open)}
+          >
             <DialogBackdrop />
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Add Load to {loadingStudent?.name}</DialogTitle>
+                <DialogTitle>Payment from {loadingStudent?.name}</DialogTitle>
               </DialogHeader>
               <DialogCloseTrigger />
               <DialogBody>
                 <VStack gap={4}>
-                  <Text fontSize="sm" color="gray.600" _dark={{ color: 'gray.400' }}>
-                    Current Load: ₱{loadingStudent?.load.toFixed(2)}
+                  <Text
+                    fontSize="sm"
+                    color="gray.600"
+                    _dark={{ color: 'gray.400' }}
+                  >
+                    Current Balance: ₱{loadingStudent?.load.toFixed(2)}
                   </Text>
-                  <Field label="Amount to Add" required>
+                  <Field label="Amount Paid" required>
                     <Input
                       type="number"
                       step="0.01"
-                      placeholder="Enter amount to add"
+                      placeholder="Enter amount paid"
                       value={addLoadFormData.load}
                       onChange={(e) => handleAddLoadInputChange(e.target.value)}
                     />
@@ -512,7 +594,11 @@ export default function StudentsPage() {
                 >
                   Cancel
                 </Button>
-                <Button colorPalette="green" onClick={handleAddLoad} loading={isSubmitting}>
+                <Button
+                  colorPalette="green"
+                  onClick={handleAddLoad}
+                  loading={isSubmitting}
+                >
                   Add Load
                 </Button>
               </DialogFooter>
@@ -548,9 +634,11 @@ export default function StudentsPage() {
                 <Table.Row bg="gray.50" _dark={{ bg: 'gray.700' }}>
                   <Table.ColumnHeader>Name</Table.ColumnHeader>
                   <Table.ColumnHeader>RFID</Table.ColumnHeader>
-                  <Table.ColumnHeader>Load</Table.ColumnHeader>
+                  <Table.ColumnHeader>Balance</Table.ColumnHeader>
                   <Table.ColumnHeader>Last Updated</Table.ColumnHeader>
-                  <Table.ColumnHeader textAlign="center">Actions</Table.ColumnHeader>
+                  <Table.ColumnHeader textAlign="center">
+                    Actions
+                  </Table.ColumnHeader>
                 </Table.Row>
               </Table.Header>
               <Table.Body>
@@ -562,11 +650,18 @@ export default function StudentsPage() {
                   </Table.Row>
                 ) : (
                   students.map((student) => (
-                    <Table.Row key={student.id} _hover={{ bg: 'gray.50', _dark: { bg: 'gray.700' } }}>
-                      <Table.Cell fontWeight="medium">{student.name}</Table.Cell>
+                    <Table.Row
+                      key={student.id}
+                      _hover={{ bg: 'gray.50', _dark: { bg: 'gray.700' } }}
+                    >
+                      <Table.Cell fontWeight="medium">
+                        {student.name}
+                      </Table.Cell>
                       <Table.Cell>{student.rfid}</Table.Cell>
                       <Table.Cell>₱{student.load.toFixed(2)}</Table.Cell>
-                      <Table.Cell fontSize="sm">{student.updated_at}</Table.Cell>
+                      <Table.Cell fontSize="sm">
+                        {student.updated_at}
+                      </Table.Cell>
                       <Table.Cell>
                         <HStack gap={2} justify="center">
                           <Button
@@ -576,7 +671,7 @@ export default function StudentsPage() {
                             onClick={() => handleAddLoadClick(student)}
                           >
                             <FiDollarSign />
-                            Add Load
+                            Payment
                           </Button>
                           <Button
                             size="sm"

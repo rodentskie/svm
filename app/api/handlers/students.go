@@ -357,12 +357,12 @@ func UpdateStudentLoad(w http.ResponseWriter, r *http.Request) {
 
 	// Set default reason if not provided
 	if req.Reason == "" {
-		req.Reason = "load"
+		req.Reason = "payment"
 	}
 
 	// Validate reason
-	if req.Reason != "load" && req.Reason != "refund" {
-		responses.ErrorResponse(w, http.StatusBadRequest, "Reason must be either 'load' or 'refund'")
+	if req.Reason != "payment" && req.Reason != "refund" {
+		responses.ErrorResponse(w, http.StatusBadRequest, "Reason must be either 'payment' or 'refund'")
 		return
 	}
 
@@ -389,15 +389,15 @@ func UpdateStudentLoad(w http.ResponseWriter, r *http.Request) {
 	// Calculate new load
 	newLoad := student.Load
 	switch req.Reason {
-	case "load":
-		newLoad += req.Load
-	case "refund":
+	case "payment":
 		newLoad -= req.Load
 		// Prevent negative balance
 		if newLoad < 0 {
-			responses.ErrorResponse(w, http.StatusBadRequest, "Insufficient balance for refund")
+			responses.ErrorResponse(w, http.StatusBadRequest, "Payment is over the balance.")
 			return
 		}
+	case "refund":
+		newLoad += req.Load
 	}
 
 	// Update student load
