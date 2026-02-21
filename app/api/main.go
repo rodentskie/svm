@@ -25,7 +25,7 @@ func main() {
 
 	logger.Info("running at api...")
 
-	portString := fmt.Sprintf(":%d", 8002)
+	portString := fmt.Sprintf(":%d", 8000)
 
 	host := env.GetEnv("HOST", "localhost")
 	port := env.GetEnv("PORT", portString)

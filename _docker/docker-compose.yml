@@ -48,7 +48,7 @@ services:
     container_name: migrations
     environment:
       ENV: dev
-    restart: unless-stopped
+    restart: no
     networks:
       - svm-network
     depends_on:
