@@ -3,10 +3,9 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { Box, Container, Stack, Text, Card, Button, Flex } from '@chakra-ui/react';
-import { FaArrowLeft, FaIdCard, FaWallet, FaExclamationTriangle } from 'react-icons/fa';
+import { FaArrowLeft, FaWallet } from 'react-icons/fa';
 import { EmptyState } from '@svm/components/empty-state';
 import { Skeleton } from '@svm/components/skeleton';
-import { Tag } from '@svm/components/tag';
 import { Product } from '../../../../types';
 import { fetchProductById, validateStudentPIN } from '../../../../lib/api';
 import { PINInputDialog } from '../../../../components/PINInputDialog';
@@ -50,7 +49,7 @@ export default function RFIDCheckoutPage() {
   };
 
   const handleConfirm = () => {
-    if (!product || load < product.price) return;
+    if (!product) return;
     
     // Open PIN dialog for validation
     setIsPINDialogOpen(true);
@@ -76,7 +75,7 @@ export default function RFIDCheckoutPage() {
     }
   };
 
-  const canAfford = product ? load >= product.price : false;
+  const projectedTotal = product ? load + product.price : load;
 
   if (error) {
     return (
@@ -185,56 +184,25 @@ export default function RFIDCheckoutPage() {
                   <Flex align="center" gap={2} mb={3}>
                     <FaWallet />
                     <Text fontSize="sm" color="fg.muted">
-                      Current Balance
+                      Current Running Total
                     </Text>
                   </Flex>
-                  <Text fontSize="2xl" fontWeight="bold" color={canAfford ? 'green.600' : 'red.600'}>
+                  <Text fontSize="2xl" fontWeight="bold" color="colorPalette.600">
                     ₱{load.toFixed(2)}
                   </Text>
                 </Box>
 
-                {/* Insufficient Balance Warning */}
-                {!canAfford && (
-                  <Box
-                    bg="red.50"
-                    borderWidth="1px"
-                    borderColor="red.200"
-                    borderRadius="md"
-                    p={4}
-                  >
-                    <Flex align="start" gap={3}>
-                      <Box color="red.600" mt={1}>
-                        <FaExclamationTriangle />
-                      </Box>
-                      <Box flex={1}>
-                        <Text fontWeight="semibold" color="red.900" mb={1}>
-                          Insufficient Balance
-                        </Text>
-                        <Text fontSize="sm" color="red.800">
-                          Your current load balance is not enough to complete this purchase.
-                          You need at least ₱{product.price.toFixed(2)}. Please top up your account.
-                        </Text>
-                        <Text fontSize="sm" color="red.800" mt={2}>
-                          Amount needed: ₱{(product.price - load).toFixed(2)}
-                        </Text>
-                      </Box>
-                    </Flex>
-                  </Box>
-                )}
-
-                {/* Balance After Purchase */}
-                {canAfford && (
-                  <Box bg="bg.subtle" p={4} borderRadius="md">
-                    <Flex justify="space-between" align="center">
-                      <Text fontSize="sm" color="fg.muted">
-                        Balance after purchase
-                      </Text>
-                      <Text fontSize="lg" fontWeight="semibold">
-                        ₱{(load - product.price).toFixed(2)}
-                      </Text>
-                    </Flex>
-                  </Box>
-                )}
+                {/* Running Total After Purchase */}
+                <Box bg="bg.subtle" p={4} borderRadius="md">
+                  <Flex justify="space-between" align="center">
+                    <Text fontSize="sm" color="fg.muted">
+                      Total after this purchase
+                    </Text>
+                    <Text fontSize="lg" fontWeight="semibold">
+                      ₱{projectedTotal.toFixed(2)}
+                    </Text>
+                  </Flex>
+                </Box>
               </Stack>
             </Card.Body>
             <Card.Footer>
@@ -252,7 +220,6 @@ export default function RFIDCheckoutPage() {
                   onClick={handleConfirm}
                   flex={1}
                   size="lg"
-                  disabled={!canAfford}
                 >
                   Confirm Payment
                 </Button>

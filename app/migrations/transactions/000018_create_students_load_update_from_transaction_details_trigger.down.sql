@@ -1,0 +1,2 @@
+DROP TRIGGER IF EXISTS update_students_load_from_transaction_details_trigger ON transaction_details;
+DROP FUNCTION IF EXISTS update_students_load_from_transaction_details();

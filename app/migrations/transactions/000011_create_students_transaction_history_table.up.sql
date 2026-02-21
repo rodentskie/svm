@@ -2,7 +2,7 @@ CREATE TABLE students_transaction_history (
     id SERIAL PRIMARY KEY,
     student_id INTEGER NOT NULL,
     load DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
-    type VARCHAR(20) NOT NULL CHECK (type IN ('load', 'purchase', 'refund')),
+    type VARCHAR(20) NOT NULL CHECK (type IN ('load', 'purchase', 'refund', 'payment')),
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     is_read BOOLEAN NOT NULL DEFAULT FALSE,
