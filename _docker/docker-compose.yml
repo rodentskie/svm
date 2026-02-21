@@ -33,7 +33,6 @@ services:
   api:
     image: api:latest
     pull_policy: never
-    platform: linux/amd64
     container_name: api
     environment:
       ENV: dev
@@ -46,7 +45,6 @@ services:
   migrations:
     image: migrations:latest
     pull_policy: never
-    platform: linux/amd64
     container_name: migrations
     environment:
       ENV: dev
@@ -61,7 +59,6 @@ services:
   ws:
     image: ws:latest
     pull_policy: never
-    platform: linux/amd64
     container_name: ws
     environment:
       ENV: dev
