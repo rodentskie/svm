@@ -4,6 +4,7 @@ import (
 	"errors"
 	"regexp"
 	"strings"
+	"unicode"
 )
 
 func ValidateEmail(email string) error {
@@ -25,4 +26,18 @@ func PhPhoneValidate(phoneNumber string) error {
 	}
 
 	return errors.New("invalid phone number")
+}
+
+func IsValidPIN(pin string) bool {
+	if len(pin) != 4 {
+		return false
+	}
+
+	for _, r := range pin {
+		if !unicode.IsDigit(r) {
+			return false
+		}
+	}
+
+	return true
 }

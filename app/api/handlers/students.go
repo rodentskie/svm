@@ -8,6 +8,7 @@ import (
 	"library/go/password"
 	"library/go/responses"
 	"library/go/structs"
+	"library/go/validate"
 	"net/http"
 	"strconv"
 
@@ -57,8 +58,8 @@ func CreateStudent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// pin only needs to be 4 digits, so we can enforce that here
-	if len(req.Pin) != 4 {
-		responses.ErrorResponse(w, http.StatusBadRequest, "PIN must be exactly 4 digits")
+	if !validate.IsValidPIN(req.Pin) {
+		responses.ErrorResponse(w, http.StatusBadRequest, "PIN must be exactly 4 numeric digits")
 		return
 	}
 
@@ -234,8 +235,8 @@ func UpdateStudent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// pin only needs to be 4 digits, so we can enforce that here
-	if len(req.Pin) != 4 {
-		responses.ErrorResponse(w, http.StatusBadRequest, "PIN must be exactly 4 digits")
+	if req.Pin != "" && !validate.IsValidPIN(req.Pin) {
+		responses.ErrorResponse(w, http.StatusBadRequest, "PIN must be exactly 4 numeric digits")
 		return
 	}
 
@@ -484,6 +485,11 @@ func ValidateStudentPin(w http.ResponseWriter, r *http.Request) {
 	pin := r.URL.Query().Get("pin")
 	if pin == "" {
 		responses.ErrorResponse(w, http.StatusBadRequest, "PIN query parameter is required")
+		return
+	}
+
+	if !validate.IsValidPIN(pin) {
+		responses.ErrorResponse(w, http.StatusBadRequest, "PIN must be exactly 4 numeric digits")
 		return
 	}
 
