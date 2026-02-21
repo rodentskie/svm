@@ -5,7 +5,9 @@
   "scripts": {
     "lint": "nx run-many -t lint --parallel=5",
     "test": "nx run-many -t test --parallel=5",
-    "tidy": "nx run-many -t tidy --parallel=5"
+    "tidy": "nx run-many -t tidy --parallel=5",
+    "build": "nx run-many -t build --parallel=5",
+    "docker": "nx run-many -t docker --parallel=5"
   },
   "private": true,
   "dependencies": {
