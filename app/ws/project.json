@@ -5,7 +5,7 @@
   "sourceRoot": "app/ws",
   "tags": [],
   "targets": {
-    "build": {
+    "build:default": {
       "executor": "@nx-go/nx-go:build",
       "options": {
         "main": "{projectRoot}/main.go",
@@ -31,8 +31,11 @@
     "docker": {
       "command": "cd {projectRoot}/ && make docker"
     },
-    "build:mac": {
-      "command": "cd {projectRoot}/ && GOOS=darwin GOARCH=arm64 go build -o app .  "
+    "build": {
+      "command": "cd {projectRoot}/ && GOOS=linux GOARCH=arm64 go build -o app ."
+    },
+    "build:mac:amd64": {
+      "command": "cd {projectRoot}/ && GOOS=linux GOARCH=amd64 go build -o app ."
     }
   }
 }
