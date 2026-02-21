@@ -2,13 +2,14 @@ FROM golang:1.25-alpine3.22
 
 WORKDIR /app
 
-ARG PORT
+ARG PORT=8080
+ENV PORT=${PORT}
 
 COPY . .
 
 RUN apk update
 RUN apk add --no-cache gcompat
 
-EXPOSE ${PORT}
+EXPOSE 8080
 
 ENTRYPOINT ["./app"]

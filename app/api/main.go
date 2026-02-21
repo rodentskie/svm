@@ -6,6 +6,7 @@ import (
 	"library/go/env"
 	"library/go/logger"
 	"net/http"
+	"strings"
 
 	"github.com/joho/godotenv"
 	"github.com/rs/cors"
@@ -24,18 +25,28 @@ func main() {
 
 	logger.Info("running at api...")
 
-	portString := fmt.Sprintf(":%d", 8000)
+	portString := fmt.Sprintf(":%d", 8002)
 
 	host := env.GetEnv("HOST", "localhost")
 	port := env.GetEnv("PORT", portString)
 	environment := env.GetEnv("ENV", "dev")
-
+	corsOriginsRaw := env.GetEnv("CORS_ORIGIN", env.GetEnv("CORS_ORIGINS", "http://localhost:3000"))
+	allowedOrigins := make([]string, 0)
+	for origin := range strings.SplitSeq(corsOriginsRaw, ",") {
+		trimmedOrigin := strings.TrimSpace(origin)
+		if trimmedOrigin != "" {
+			allowedOrigins = append(allowedOrigins, trimmedOrigin)
+		}
+	}
+	if len(allowedOrigins) == 0 {
+		allowedOrigins = []string{"http://localhost:3000"}
+	}
 	mux := http.NewServeMux()
 	routesv1.MainRoutes("v1", mux)
 
 	// cors
 	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:3000"},
+		AllowedOrigins:   allowedOrigins,
 		AllowedMethods:   []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Content-Type", "Authorization", "Accept"},
 		AllowCredentials: true,

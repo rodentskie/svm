@@ -1,0 +1,100 @@
+services:
+  pg:
+    image: postgres:16-alpine
+    container_name: pg
+    environment:
+      POSTGRES_USER: svm
+      POSTGRES_PASSWORD: superpw64
+      POSTGRES_DB: svm
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - svm-network
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@svm.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    ports:
+      - '5050:80'
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    depends_on:
+      - pg
+    restart: unless-stopped
+    networks:
+      - svm-network
+  
+  api:
+    image: api:latest
+    pull_policy: never
+    container_name: api
+    environment:
+      ENV: dev
+    ports:
+      - '8000:8000'
+    restart: unless-stopped
+    networks:
+      - svm-network
+  
+  migrations:
+    image: migrations:latest
+    pull_policy: never
+    container_name: migrations
+    environment:
+      ENV: dev
+    restart: unless-stopped
+    networks:
+      - svm-network
+    depends_on:
+      - pg
+    command: |
+      sh -c "sleep 5 && ./app up"
+  
+  ws:
+    image: ws:latest
+    pull_policy: never
+    container_name: ws
+    environment:
+      ENV: dev
+    ports:
+      - '8081:8081'
+    restart: unless-stopped
+    networks:
+      - svm-network
+
+  app:
+    image: app:latest
+    pull_policy: never
+    container_name: app
+    environment:
+      ENV: dev
+    ports:
+      - '3000:3000'
+    restart: unless-stopped
+    networks:
+      - svm-network
+  
+  kiosk:
+    image: kiosk:latest
+    pull_policy: never
+    container_name: kiosk
+    environment:
+      ENV: dev
+    ports:
+      - '4000:3000'
+    restart: unless-stopped
+    networks:
+      - svm-network
+    
+networks:
+  svm-network:
+    name: svm-network
+volumes:
+  pgdata:
+  pgadmin-data:
