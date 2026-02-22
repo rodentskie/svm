@@ -1,5 +1,7 @@
 package structs
 
+import "library/go/models"
+
 type CreateStudentRequest struct {
 	Name string `json:"name" binding:"required"`
 	RFID string `json:"rfid" binding:"required"`
@@ -24,4 +26,14 @@ type StudentResponse struct {
 	Load      float64 `json:"load"`
 	CreatedAt string  `json:"created_at"`
 	UpdatedAt string  `json:"updated_at"`
+}
+
+type StudentLoginRequest struct {
+	RFID string `json:"rfid" binding:"required"`
+	Pin  string `json:"pin" binding:"required"`
+}
+
+type StudentLoginResponse struct {
+	Token   string         `json:"token"`
+	Student models.Student `json:"student"`
 }

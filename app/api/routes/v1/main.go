@@ -145,6 +145,10 @@ func MainRoutes(prefix string, mux *http.ServeMux) {
 		http.HandlerFunc(handlers.ValidateStudentPin),
 	)
 
+	mux.HandleFunc(fmt.Sprintf("POST /%s/students/login", prefix), handlers.StudentsLogin)
+	mux.HandleFunc(fmt.Sprintf("GET /%s/students/data", prefix), handlers.StudentsTransactionData)
+	mux.HandleFunc(fmt.Sprintf("PATCH /%s/students/data/{transactionId}", prefix), handlers.StudentReadTransaction)
+
 	// payment methods
 	mux.Handle(
 		fmt.Sprintf("GET /%s/payment_methods", prefix),

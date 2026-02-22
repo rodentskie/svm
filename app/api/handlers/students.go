@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"library/go/database"
+	"library/go/jwt"
 	"library/go/logger"
 	"library/go/models"
 	"library/go/password"
@@ -526,4 +527,214 @@ func ValidateStudentPin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	responses.SuccessResponse(w, res)
+}
+
+// students login via rfid and pin
+func StudentsLogin(w http.ResponseWriter, r *http.Request) {
+	defer studentLog.Sync()
+
+	var loginReq structs.StudentLoginRequest
+	if err := json.NewDecoder(r.Body).Decode(&loginReq); err != nil {
+		studentLog.Error("failed to decode request body", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	// Validate required fields
+	if loginReq.RFID == "" || loginReq.Pin == "" {
+		responses.ErrorResponse(w, http.StatusBadRequest, "RFID and PIN are required")
+		return
+	}
+
+	// Get database connection
+	db, err := database.GetDB()
+	if err != nil {
+		studentLog.Error("failed to get database connection", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Database connection error")
+		return
+	}
+
+	// Fetch student by RFID
+	var student models.Student
+	if err := db.Where("rfid = ?", loginReq.RFID).First(&student).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			responses.ErrorResponse(w, http.StatusNotFound, "Student not found")
+			return
+		}
+		studentLog.Error("failed to fetch student", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to fetch student")
+		return
+	}
+
+	// Validate PIN
+	pinHash := student.PinHash
+	if err := password.ValidatePassword(pinHash, loginReq.Pin); err != nil {
+		responses.ErrorResponse(w, http.StatusUnauthorized, "Invalid RFID or PIN")
+		return
+	}
+
+	// Generate JWT token
+	token, err := jwt.GenerateToken(student.ID, student.Name, student.RFID)
+	if err != nil {
+		studentLog.Error("failed to generate JWT token", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to generate authentication token")
+		return
+	}
+
+	// Store JWT token in database
+	student.JwtToken = token
+	if err := db.Save(&student).Error; err != nil {
+		studentLog.Error("failed to save JWT token", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to save authentication token")
+		return
+	}
+
+	// Success - return user data with JWT token
+	studentLog.Info("student logged in successfully", zap.String("name", student.Name), zap.Uint("student_id", student.ID))
+
+	loginResp := structs.StudentLoginResponse{
+		Token:   token,
+		Student: student,
+	}
+
+	responses.SuccessResponse(w, loginResp)
+}
+
+// get transaction data for a student
+func StudentsTransactionData(w http.ResponseWriter, r *http.Request) {
+	defer studentLog.Sync()
+
+	// Get query parameters for pagination
+	limitStr := r.URL.Query().Get("limit")
+	offsetStr := r.URL.Query().Get("offset")
+
+	// Set default values
+	limit := 10
+	offset := 0
+
+	// Parse limit
+	if limitStr != "" {
+		parsedLimit, err := strconv.Atoi(limitStr)
+		if err != nil || parsedLimit <= 0 {
+			responses.ErrorResponse(w, http.StatusBadRequest, "Invalid limit parameter")
+			return
+		}
+		limit = parsedLimit
+	}
+
+	// Parse offset
+	if offsetStr != "" {
+		parsedOffset, err := strconv.Atoi(offsetStr)
+		if err != nil || parsedOffset < 0 {
+			responses.ErrorResponse(w, http.StatusBadRequest, "Invalid offset parameter")
+			return
+		}
+		offset = parsedOffset
+	}
+
+	// Get student RFID from query parameter (public route)
+	rfid := r.URL.Query().Get("rfid")
+	if rfid == "" {
+		responses.ErrorResponse(w, http.StatusBadRequest, "RFID query parameter is required")
+		return
+	}
+
+	// Get database connection
+	db, err := database.GetDB()
+	if err != nil {
+		studentLog.Error("failed to get database connection", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Database connection error")
+		return
+	}
+
+	// Verify student exists and token is current
+	var student models.Student
+	if err := db.Where("rfid = ?", rfid).First(&student).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			responses.ErrorResponse(w, http.StatusNotFound, "Student not found")
+			return
+		}
+		studentLog.Error("failed to fetch student", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to fetch student")
+		return
+	}
+
+	// Fetch students transaction history with pagination
+	var history []models.StudentTransactionHistory
+	if err := db.
+		Where("student_id = ?", student.ID).
+		Limit(limit).
+		Offset(offset).
+		Order("created_at DESC").
+		Find(&history).Error; err != nil {
+		studentLog.Error("failed to fetch student transaction history", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to fetch student transaction history")
+		return
+	}
+
+	// Get total count for pagination metadata
+	var total int64
+	if err := db.Model(&models.StudentTransactionHistory{}).
+		Where("student_id = ?", student.ID).
+		Count(&total).Error; err != nil {
+		studentLog.Error("failed to count student transaction history", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to count student transaction history")
+		return
+	}
+
+	response := map[string]any{
+		"current_load": student.Load,
+		"data":         history,
+		"pagination": map[string]any{
+			"limit":  limit,
+			"offset": offset,
+			"total":  total,
+		},
+	}
+
+	responses.SuccessResponse(w, response)
+}
+
+// is read transaction
+func StudentReadTransaction(w http.ResponseWriter, r *http.Request) {
+	defer studentLog.Sync()
+
+	// Get transaction ID from URL path
+	transactionIDStr := r.PathValue("transactionId")
+	transactionID, err := strconv.ParseUint(transactionIDStr, 10, 64)
+	if err != nil {
+		responses.ErrorResponse(w, http.StatusBadRequest, "Invalid transaction ID")
+		return
+	}
+
+	// Get database connection
+	db, err := database.GetDB()
+	if err != nil {
+		studentLog.Error("failed to get database connection", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Database connection error")
+		return
+	}
+
+	// get transactions history
+	var transaction models.StudentTransactionHistory
+	if err := db.First(&transaction, transactionID).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			responses.ErrorResponse(w, http.StatusNotFound, "Transaction not found")
+			return
+		}
+		studentLog.Error("failed to fetch transaction", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to fetch transaction")
+		return
+	}
+
+	// update is_read to true
+	if err := db.Model(&transaction).Update("is_read", true).Error; err != nil {
+		studentLog.Error("failed to update transaction as read", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to mark transaction as read")
+		return
+	}
+
+	studentLog.Info("transaction marked as read successfully", zap.Uint("transaction_id", uint(transactionID)))
+
+	responses.NoContentResponse(w)
 }
