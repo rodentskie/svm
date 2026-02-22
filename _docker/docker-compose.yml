@@ -91,6 +91,18 @@ services:
     restart: unless-stopped
     networks:
       - svm-network
+  
+  students:
+    image: students:latest
+    pull_policy: never
+    container_name: students
+    environment:
+      ENV: dev
+    ports:
+      - '5000:3000'
+    restart: unless-stopped
+    networks:
+      - svm-network
     
 networks:
   svm-network:
