@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"library/go/database"
+	"library/go/jwt"
 	"library/go/logger"
 	"library/go/models"
 	"library/go/password"
@@ -526,4 +527,75 @@ func ValidateStudentPin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	responses.SuccessResponse(w, res)
+}
+
+// students login via rfid and pin
+func StudentsLogin(w http.ResponseWriter, r *http.Request) {
+	defer studentLog.Sync()
+
+	var loginReq structs.StudentLoginRequest
+	if err := json.NewDecoder(r.Body).Decode(&loginReq); err != nil {
+		studentLog.Error("failed to decode request body", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	// Validate required fields
+	if loginReq.RFID == "" || loginReq.Pin == "" {
+		responses.ErrorResponse(w, http.StatusBadRequest, "RFID and PIN are required")
+		return
+	}
+
+	// Get database connection
+	db, err := database.GetDB()
+	if err != nil {
+		studentLog.Error("failed to get database connection", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Database connection error")
+		return
+	}
+
+	// Fetch student by RFID
+	var student models.Student
+	if err := db.Where("rfid = ?", loginReq.RFID).First(&student).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			responses.ErrorResponse(w, http.StatusNotFound, "Student not found")
+			return
+		}
+		studentLog.Error("failed to fetch student", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to fetch student")
+		return
+	}
+
+	// Validate PIN
+	pinHash := student.PinHash
+	if err := password.ValidatePassword(pinHash, loginReq.Pin); err != nil {
+		responses.ErrorResponse(w, http.StatusUnauthorized, "Invalid RFID or PIN")
+		return
+	}
+
+	// Generate JWT token
+	token, err := jwt.GenerateToken(student.ID, student.Name, student.RFID)
+	if err != nil {
+		studentLog.Error("failed to generate JWT token", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to generate authentication token")
+		return
+	}
+
+	// Store JWT token in database
+	student.JwtToken = token
+	if err := db.Save(&student).Error; err != nil {
+		studentLog.Error("failed to save JWT token", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to save authentication token")
+		return
+	}
+
+	// Success - return user data with JWT token
+	studentLog.Info("student logged in successfully", zap.String("name", student.Name), zap.Uint("student_id", student.ID))
+
+	loginResp := structs.StudentLoginResponse{
+		Token:   token,
+		Student: student,
+	}
+
+	responses.SuccessResponse(w, loginResp)
 }

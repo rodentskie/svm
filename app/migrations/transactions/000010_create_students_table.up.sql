@@ -4,6 +4,7 @@ CREATE TABLE students (
     rfid VARCHAR(10) NOT NULL,
     load DECIMAL(10, 2) NOT NULL CHECK (load >= 0) DEFAULT 0.00,
     pin_hash VARCHAR(255) NOT NULL,
+    jwt_token TEXT,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP
