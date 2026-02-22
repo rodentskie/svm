@@ -68,7 +68,7 @@ Change anything inside `<>`.
 
 ### Setup
 
-Once `.env` files are setup. Run the command.
+Once `.env` files are ready. Run the command.
 
 ```bash
 bash tools/scripts/setup.sh
