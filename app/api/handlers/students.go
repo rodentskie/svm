@@ -599,3 +599,98 @@ func StudentsLogin(w http.ResponseWriter, r *http.Request) {
 
 	responses.SuccessResponse(w, loginResp)
 }
+
+// get transaction data for a student
+func StudentsTransactionData(w http.ResponseWriter, r *http.Request) {
+	defer studentLog.Sync()
+
+	// Get query parameters for pagination
+	limitStr := r.URL.Query().Get("limit")
+	offsetStr := r.URL.Query().Get("offset")
+
+	// Set default values
+	limit := 10
+	offset := 0
+
+	// Parse limit
+	if limitStr != "" {
+		parsedLimit, err := strconv.Atoi(limitStr)
+		if err != nil || parsedLimit <= 0 {
+			responses.ErrorResponse(w, http.StatusBadRequest, "Invalid limit parameter")
+			return
+		}
+		limit = parsedLimit
+	}
+
+	// Parse offset
+	if offsetStr != "" {
+		parsedOffset, err := strconv.Atoi(offsetStr)
+		if err != nil || parsedOffset < 0 {
+			responses.ErrorResponse(w, http.StatusBadRequest, "Invalid offset parameter")
+			return
+		}
+		offset = parsedOffset
+	}
+
+	// Get student RFID from query parameter (public route)
+	rfid := r.URL.Query().Get("rfid")
+	if rfid == "" {
+		responses.ErrorResponse(w, http.StatusBadRequest, "RFID query parameter is required")
+		return
+	}
+
+	// Get database connection
+	db, err := database.GetDB()
+	if err != nil {
+		studentLog.Error("failed to get database connection", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Database connection error")
+		return
+	}
+
+	// Verify student exists and token is current
+	var student models.Student
+	if err := db.Where("rfid = ?", rfid).First(&student).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			responses.ErrorResponse(w, http.StatusNotFound, "Student not found")
+			return
+		}
+		studentLog.Error("failed to fetch student", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to fetch student")
+		return
+	}
+
+	// Fetch students transaction history with pagination
+	var history []models.StudentTransactionHistory
+	if err := db.
+		Where("student_id = ?", student.ID).
+		Limit(limit).
+		Offset(offset).
+		Order("created_at DESC").
+		Find(&history).Error; err != nil {
+		studentLog.Error("failed to fetch student transaction history", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to fetch student transaction history")
+		return
+	}
+
+	// Get total count for pagination metadata
+	var total int64
+	if err := db.Model(&models.StudentTransactionHistory{}).
+		Where("student_id = ?", student.ID).
+		Count(&total).Error; err != nil {
+		studentLog.Error("failed to count student transaction history", zap.Error(err))
+		responses.ErrorResponse(w, http.StatusInternalServerError, "Failed to count student transaction history")
+		return
+	}
+
+	response := map[string]any{
+		"current_load": student.Load,
+		"data":         history,
+		"pagination": map[string]any{
+			"limit":  limit,
+			"offset": offset,
+			"total":  total,
+		},
+	}
+
+	responses.SuccessResponse(w, response)
+}

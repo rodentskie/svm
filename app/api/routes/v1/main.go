@@ -146,6 +146,7 @@ func MainRoutes(prefix string, mux *http.ServeMux) {
 	)
 
 	mux.HandleFunc(fmt.Sprintf("POST /%s/students/login", prefix), handlers.StudentsLogin)
+	mux.HandleFunc(fmt.Sprintf("GET /%s/students/data", prefix), handlers.StudentsTransactionData)
 
 	// payment methods
 	mux.Handle(

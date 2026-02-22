@@ -11,6 +11,7 @@ type StudentTransactionHistory struct {
 	Type      string    `json:"type" validate:"required,oneof=load purchase refund"`
 	CreatedAt time.Time `gorm:"<-:false" json:"created_at"`
 	UpdatedAt time.Time `gorm:"<-:false" json:"updated_at"`
+	IsRead    bool      `gorm:"default:false" json:"is_read"`
 
 	// Relationship
 	Student Student `gorm:"foreignKey:StudentId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"-"`
