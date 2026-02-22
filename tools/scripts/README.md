@@ -4,6 +4,14 @@ Guide to run it for production on your machine. (MacOS)
 
 ## Prerequistes
 
+Update your codebase.
+
+Run the command
+
+```bash
+git pull origin main
+```
+
 ### .env file
 
 There should be `.env` file on each project located inside `app/` folder except for `ws/`.
