@@ -39,7 +39,7 @@
         "main": "{projectRoot}/main.go down"
       }
     },
-     "drop": {
+    "drop": {
       "executor": "@nx-go/nx-go:serve",
       "options": {
         "main": "{projectRoot}/main.go drop"
@@ -49,10 +49,7 @@
       "command": "cd {projectRoot}/ && make docker"
     },
     "build": {
-      "command": "cd {projectRoot}/ && GOOS=linux GOARCH=arm64 go build -o app ."
-    },
-    "build:mac:amd64": {
-      "command": "cd {projectRoot}/ && GOOS=linux GOARCH=amd64 go build -o app ."
+      "command": "cd {projectRoot}/ && GOOS=linux GOARCH=$(go env GOARCH) go build -o app ."
     }
   }
 }
