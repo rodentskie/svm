@@ -32,10 +32,7 @@
       "command": "cd {projectRoot}/ && make docker"
     },
     "build": {
-      "command": "cd {projectRoot}/ && GOOS=linux GOARCH=arm64 go build -o app ."
-    },
-    "build:mac:amd64": {
-      "command": "cd {projectRoot}/ && GOOS=linux GOARCH=amd64 go build -o app ."
+      "command": "cd {projectRoot}/ && GOOS=linux GOARCH=$(go env GOARCH) go build -o app ."
     }
   }
 }

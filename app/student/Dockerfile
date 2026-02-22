@@ -13,7 +13,7 @@ ENV HOSTNAME="0.0.0.0"
 
 COPY --chown=node:node ./public ./public
 COPY --chown=node:node ./.next/standalone/node_modules ./node_modules
-COPY --chown=node:node ./.next/standalone/app/app ./
+COPY --chown=node:node ./.next/standalone/app/student ./
 COPY --chown=node:node ./.next/static ./.next/static
 
 # Switch to non-root user for security best practices
