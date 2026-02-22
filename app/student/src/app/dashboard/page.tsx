@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Badge,
   Box,
@@ -41,6 +42,7 @@ type StudentDataResponse = {
 const DEFAULT_LIMIT = 10;
 
 export default function StudentDashboardPage() {
+  const router = useRouter();
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/v1';
 
   const [rfid, setRfid] = useState('');
@@ -58,10 +60,12 @@ export default function StudentDashboardPage() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const storedRfid = localStorage.getItem('student_rfid');
-    if (storedRfid) {
-      setRfid(storedRfid);
+    if (!storedRfid) {
+      router.push('/');
+      return;
     }
-  }, []);
+    setRfid(storedRfid);
+  }, [router]);
 
   const hasMore = useMemo(
     () => transactions.length < total,
@@ -240,7 +244,7 @@ export default function StudentDashboardPage() {
                 </Badge>
               </Box>
             </Popover.Trigger>
-            <PopoverContent onMouseLeave={() => setPopoverOpen(false)} p={2}>
+            <PopoverContent onMouseLeave={() => setPopoverOpen(false)} p={2} boxSize={'12'}>
               <Box display="flex" justifyContent="center">
                 <IconButton
                   size="xs"
