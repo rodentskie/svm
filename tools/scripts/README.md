@@ -60,7 +60,9 @@ NEXT_PUBLIC_API_URL=http://<ip>:8000/v1
 Change anything inside `<>`.
 
 `<ip>` = the IP address of the laptop
+
 `<paymongo_test_public_key>` = get this in the Paymongo (switch to `test` mode) -> Settings -> Developers 
+
 `paymongo_test_secret_key` = get this in the Paymongo (switch to `test` mode) -> Settings -> Developers 
 
 
