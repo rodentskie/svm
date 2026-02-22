@@ -9,12 +9,14 @@ import {
   Heading,
   HStack,
   IconButton,
+  Popover,
   Spinner,
   Stack,
   Text,
 } from '@chakra-ui/react';
 import { ColorModeButton } from '@svm/components/color-mode';
-import { LuBell } from 'react-icons/lu';
+import { PopoverContent } from '@svm/components/popover';
+import { LuBell, LuCheck } from 'react-icons/lu';
 
 type StudentTransaction = {
   id: number;
@@ -49,6 +51,7 @@ export default function StudentDashboardPage() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [markingRead, setMarkingRead] = useState(false);
   const [error, setError] = useState('');
+  const [popoverOpen, setPopoverOpen] = useState(false);
 
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 
@@ -132,13 +135,10 @@ export default function StudentDashboardPage() {
         headers.Authorization = `Bearer ${token}`;
       }
 
-      const response = await fetch(
-        `${apiUrl}/students/data/${transactionId}`,
-        {
-          method: 'PATCH',
-          headers,
-        },
-      );
+      const response = await fetch(`${apiUrl}/students/data/${transactionId}`, {
+        method: 'PATCH',
+        headers,
+      });
 
       if (!response.ok && response.status !== 204) {
         throw new Error('Failed to mark transaction as read');
@@ -165,9 +165,7 @@ export default function StudentDashboardPage() {
     setMarkingRead(true);
     try {
       await Promise.all(
-        unreadItems.map((transaction) =>
-          markTransactionAsRead(transaction.id),
-        ),
+        unreadItems.map((transaction) => markTransactionAsRead(transaction.id)),
       );
     } catch {
       setError('Failed to mark notifications as read.');
@@ -215,29 +213,50 @@ export default function StudentDashboardPage() {
         <Heading size="md">Student Dashboard</Heading>
         <HStack gap={2}>
           <ColorModeButton />
-          <Box position="relative">
-            <IconButton
-              aria-label="Notifications"
-              variant="ghost"
-              size="sm"
-              onClick={markAllVisibleUnreadAsRead}
-              loading={markingRead}
-            >
-              <LuBell />
-            </IconButton>
-            <Badge
-              position="absolute"
-              top="-1"
-              right="-1"
-              colorPalette="red"
-              borderRadius="full"
-              minW="5"
-              textAlign="center"
-              px="1"
-            >
-              {unreadCount}
-            </Badge>
-          </Box>
+          <Popover.Root
+            open={popoverOpen}
+            onOpenChange={(details) => setPopoverOpen(details.open)}
+          >
+            <Popover.Trigger asChild>
+              <Box position="relative" onClick={() => setPopoverOpen(true)}>
+                <IconButton
+                  aria-label="Notifications"
+                  variant="ghost"
+                  size="sm"
+                >
+                  <LuBell />
+                </IconButton>
+                <Badge
+                  position="absolute"
+                  top="-1"
+                  right="-1"
+                  colorPalette="red"
+                  borderRadius="full"
+                  minW="5"
+                  textAlign="center"
+                  px="1"
+                >
+                  {unreadCount}
+                </Badge>
+              </Box>
+            </Popover.Trigger>
+            <PopoverContent onMouseLeave={() => setPopoverOpen(false)} p={2}>
+              <Box display="flex" justifyContent="center">
+                <IconButton
+                  size="xs"
+                  colorPalette="green"
+                  aria-label="Mark all as read"
+                  onClick={() => {
+                    markAllVisibleUnreadAsRead();
+                    setPopoverOpen(false);
+                  }}
+                  loading={markingRead}
+                >
+                  <LuCheck />
+                </IconButton>
+              </Box>
+            </PopoverContent>
+          </Popover.Root>
         </HStack>
       </Flex>
 
@@ -279,9 +298,12 @@ export default function StudentDashboardPage() {
                     _dark={{
                       bg: transaction.is_read ? 'transparent' : 'yellow.900/20',
                     }}
-                    onClick={() => markTransactionAsRead(transaction.id)}
-                    cursor="pointer"
-                    _hover={{ opacity: 0.8 }}
+                    onClick={() =>
+                      !transaction.is_read &&
+                      markTransactionAsRead(transaction.id)
+                    }
+                    cursor={transaction.is_read ? 'default' : 'pointer'}
+                    _hover={transaction.is_read ? {} : { opacity: 0.8 }}
                   >
                     <Flex justify="space-between" align="start" gap={3}>
                       <Box>

@@ -61,7 +61,6 @@ export default function StudentLoginPage() {
         return;
       }
 
-      localStorage.setItem('token', data.token);
       if (data.student?.rfid) {
         localStorage.setItem('student_rfid', data.student.rfid);
       }
