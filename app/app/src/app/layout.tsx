@@ -1,7 +1,7 @@
 import { Provider } from '@svm/components/provider';
 
 export const metadata = {
-  title: 'SVM',
+  title: 'SVM | Admin',
   description: 'Smart Vending Machine Management System',
 };
 
