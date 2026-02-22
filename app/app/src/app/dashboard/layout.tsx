@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Box, Heading, Text } from '@chakra-ui/react';
+import { Box } from '@chakra-ui/react';
 import { TopNavBar } from '../../components/TopNavBar';
 import { SideNav } from '../../components/SideNav';
 
@@ -29,13 +29,18 @@ export default function DashboardPage(props: { children: React.ReactNode }) {
     // Add navigation logic here, e.g., router.push(`/${itemId}`)
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    router.push('/');
+  };
+
   if (isLoading) {
     return null; // or a loading spinner
   }
 
   return (
     <Box minH="100vh" bg="bg.muted">
-      <TopNavBar userName="User Name" />
+      <TopNavBar userName="User Name" onLogout={handleLogout} />
 
       <SideNav
         isCollapsed={isCollapsed}
