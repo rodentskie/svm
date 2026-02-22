@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import {
   Box,
@@ -27,6 +28,7 @@ type LoginResponse = {
 };
 
 export default function StudentLoginPage() {
+  const router = useRouter();
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/v1';
 
   const [rfid, setRfid] = useState('');
@@ -60,7 +62,11 @@ export default function StudentLoginPage() {
       }
 
       localStorage.setItem('token', data.token);
-      setSuccess('Login successful.');
+      if (data.student?.rfid) {
+        localStorage.setItem('student_rfid', data.student.rfid);
+      }
+      setSuccess('Login successful. Redirecting...');
+      router.push('/dashboard');
     } catch {
       setError('Network error. Please try again.');
     } finally {

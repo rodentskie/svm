@@ -13,7 +13,11 @@ BEGIN
 		) VALUES (
 			NEW.id,
 			NEW.load - OLD.load,
-			'purchase',
+			CASE
+				WHEN NEW.load > OLD.load THEN 'purchase'
+				WHEN NEW.load < OLD.load THEN 'payment'
+				ELSE 'purchase'
+			END,
 			NOW(),
 			NOW()
 		);
