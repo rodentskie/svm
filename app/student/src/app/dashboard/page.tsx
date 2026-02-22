@@ -41,7 +41,7 @@ const DEFAULT_LIMIT = 10;
 export default function StudentDashboardPage() {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/v1';
 
-  const [rfid, setRfid] = useState('12345');
+  const [rfid, setRfid] = useState('');
   const [currentLoad, setCurrentLoad] = useState(0);
   const [transactions, setTransactions] = useState<StudentTransaction[]>([]);
   const [total, setTotal] = useState(0);
@@ -71,6 +71,8 @@ export default function StudentDashboardPage() {
 
   const fetchData = useCallback(
     async (offset: number, append: boolean) => {
+      if (!rfid) return;
+
       if (append) {
         setLoadingMore(true);
       } else {
