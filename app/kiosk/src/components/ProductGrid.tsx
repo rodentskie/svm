@@ -68,6 +68,9 @@ export function ProductGrid({ products, onAddToCart, isLoading = false }: Produc
                 <Text fontSize="lg" fontWeight="bold" lineHeight="tight">
                   {product.name}
                 </Text>
+                <Text fontSize="sm" color="fg.muted" mt={1}>
+                  Location: {product.location}
+                </Text>
               </Box>
 
               <Box>

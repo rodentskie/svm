@@ -15,9 +15,9 @@ git pull origin main
 - Go insalled
 - Nx available through project scripts (`npx nx ...` is fine)
 
-## 2) Create `.env` files
+## 2) Create environment files
 
-Create a `.env` file in each app folder under `app/`, except `app/ws`.
+Create environment files in each app folder under `app/`, except `app/ws`.
 
 Use each project's `.env.example` as template:
 
@@ -25,13 +25,23 @@ Use each project's `.env.example` as template:
 cp app/<project>/.env.example app/<project>/.env
 ```
 
-Projects that need `.env`:
+Projects that use `.env`:
 
 - `app/api`
 - `app/app`
-- `app/kiosk`
 - `app/migrations`
+
+Projects that use `.env.production`:
+
+- `app/kiosk`
 - `app/student`
+
+Example:
+
+```bash
+cp app/kiosk/.env.example app/kiosk/.env.production
+cp app/student/.env.example app/student/.env.production
+```
 
 ## 3) Required environment values per project
 
@@ -58,7 +68,7 @@ CORS_ORIGINS=http://<ip>:3000,http://<ip>:4000,http://<ip>:5000
 NEXT_PUBLIC_API_URL=http://<ip>:8000/v1
 ```
 
-### `app/kiosk/.env`
+### `app/kiosk/.env.production`
 
 ```env
 NEXT_PUBLIC_API_URL=http://<ip>:8000/v1
@@ -71,7 +81,7 @@ NEXT_PUBLIC_APP_URL=http://<ip>:4000
 DATABASE_URL=postgres://svm:superpw64@pg:5432/svm?sslmode=disable
 ```
 
-### `app/student/.env`
+### `app/student/.env.production`
 
 ```env
 NEXT_PUBLIC_API_URL=http://<ip>:8000/v1
