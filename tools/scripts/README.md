@@ -12,14 +12,14 @@ git pull origin main
 
 - Docker and Docker Compose installed
 - Node.js + npm installed
-- Go insalled
+- Go installed
 - Nx available through project scripts (`npx nx ...` is fine)
 
 ## 2) Create environment files
 
-Create environment files in each app folder under `app/`, except `app/ws`.
+Create environment files in each project under `app/`, except `app/ws`.
 
-Use each project's `.env.example` as template:
+Use each project's `.env.example` as the template:
 
 ```bash
 cp app/<project>/.env.example app/<project>/.env
@@ -46,11 +46,11 @@ cp app/app/.env.example app/app/.env.production
 
 ## 3) Required environment values per project
 
-Replace all values inside angle brackets (example: `<ip>`).
+Replace all values inside angle brackets (for example: `<ip>`).
 
 ### `app/api/.env`
 
-Only these usually need your custom values:
+Usually, only these values need to be customized:
 - `PAYMONGO_PUBLIC_KEY`
 - `PAYMONGO_SECRET_KEY`
 - `CORS_ORIGINS`
@@ -111,5 +111,36 @@ After setup:
 - Kiosk app should load at `http://<ip>:4000`
 - Student app should load at `http://<ip>:5000`
 
-If one service fails, check its `.env` first, then re-run `bash tools/scripts/setup.sh`.
+If any service fails, check its `.env` file first, then re-run `bash tools/scripts/setup.sh`.
 
+## 7) Raspberry Setup
+
+Make sure the Raspberry Pi is connected to the same network (Ethernet or Wi-Fi) as your laptop/PC.
+
+From your laptop/PC, connect to the Raspberry Pi over SSH:
+
+```bash
+ssh svm@<ip of raspberry>
+```
+
+Enter the Raspberry Pi password when prompted.
+
+Then edit the kiosk startup script:
+
+```bash
+gedit ~/scripts/run_kiosk.sh
+```
+
+At the bottom of that file, replace the existing URL/IP with your **host machine IP** (the same `<ip>` used in this guide), then save.
+
+```bash
+crontab -e
+```
+
+Find the line that starts with `# @reboot ...` and uncomment it by removing `#`.
+
+Save and exit. Reboot the Raspberry Pi to verify it auto-starts in kiosk mode.
+
+```bash
+sudo reboot now
+```
