@@ -93,6 +93,11 @@ func MainRoutes(prefix string, mux *http.ServeMux) {
 	)
 
 	mux.Handle(
+		fmt.Sprintf("GET /%s/dashboard/analytics", prefix),
+		middleware.AuthMiddleware(db)(http.HandlerFunc(handlers.GetDashboardAnalytics)),
+	)
+
+	mux.Handle(
 		fmt.Sprintf("POST /%s/transactions", prefix),
 		http.HandlerFunc(handlers.CreateTransaction),
 	)
