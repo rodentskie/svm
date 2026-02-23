@@ -128,7 +128,7 @@ Enter the Raspberry Pi password when prompted.
 Then edit the kiosk startup script:
 
 ```bash
-gedit ~/scripts/run_kiosk.sh
+nano ~/scripts/run_kiosk.sh
 ```
 
 At the bottom of that file, replace the existing URL/IP with your **host machine IP** (the same `<ip>` used in this guide), then save.
