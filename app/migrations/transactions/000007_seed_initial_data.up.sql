@@ -10,11 +10,11 @@ INSERT INTO
     )
 VALUES
     (
-        'admin',
+        'nddu',
         '$2a$10$DaRgjQlxjPuFhbBTznhu9eVBYs.g8dp3CHP4lbjWmdlLpq1OT6CSa',
-        'Rodney Lingganay',
-        'rodentskie@gmail.com',
-        '+639978305773',
+        'Notre Dame of Dadiangas University',
+        'nddu@gmail.com',
+        '+639123456789',
         'admin',
         true
     );
