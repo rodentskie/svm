@@ -1,6 +1,7 @@
 'use client';
 
-import { Box, Stack, Text, Button } from '@chakra-ui/react';
+import { Box, Stack, Text, Button, HStack } from '@chakra-ui/react';
+import { ColorModeButton } from '@svm/components/color-mode';
 import { Skeleton } from '@svm/components/skeleton';
 import { Category } from '../types';
 
@@ -52,9 +53,12 @@ export function CategorySidebar({
       flexShrink={0}
     >
       <Box p={6} borderBottom="1px solid" borderColor="border.subtle">
-        <Text fontSize="2xl" fontWeight="bold" color="green.600" _dark={{ color: "green.400" }}>
-          Categories
-        </Text>
+        <HStack justify="space-between" align="center">
+          <Text fontSize="2xl" fontWeight="bold" color="green.600" _dark={{ color: "green.400" }}>
+            Categories
+          </Text>
+          <ColorModeButton />
+        </HStack>
         <Text fontSize="sm" color="fg.muted" mt={1}>
           Select a category to browse
         </Text>
