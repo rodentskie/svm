@@ -28,11 +28,11 @@ cp app/<project>/.env.example app/<project>/.env
 Projects that use `.env`:
 
 - `app/api`
-- `app/app`
 - `app/migrations`
 
 Projects that use `.env.production`:
 
+- `app/app`
 - `app/kiosk`
 - `app/student`
 
@@ -41,6 +41,7 @@ Example:
 ```bash
 cp app/kiosk/.env.example app/kiosk/.env.production
 cp app/student/.env.example app/student/.env.production
+cp app/app/.env.example app/app/.env.production
 ```
 
 ## 3) Required environment values per project
@@ -62,7 +63,7 @@ DATABASE_URL=postgres://svm:superpw64@pg:5432/svm?sslmode=disable
 CORS_ORIGINS=http://<ip>:3000,http://<ip>:4000,http://<ip>:5000
 ```
 
-### `app/app/.env`
+### `app/app/.env.production`
 
 ```env
 NEXT_PUBLIC_API_URL=http://<ip>:8000/v1
