@@ -33,8 +33,8 @@ bool alreadyConnected = false;
 #define LED 25  // on when connected else off
 #define SERVO_PIN_A1 32
 #define SERVO_PIN_A2 33
-#define SERVO_PIN_A3 25
-#define SERVO_PIN_A4 26
+#define SERVO_PIN_A3 26
+#define SERVO_PIN_A4 27
 
 void hexdump(const void* mem, const uint32_t& len, const uint8_t& cols = 16) {
   const uint8_t* src = (const uint8_t*)mem;
