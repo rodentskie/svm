@@ -15,6 +15,6 @@ CREATE TRIGGER update_product_categories_updated_at
 -- Insert the constant category data
 INSERT INTO product_categories (name) VALUES
     ('Deodorant'),
-    ('Wet tissue'),
+    ('Tissue'),
     ('Sanitary napkin'),
     ('Dental kit');
