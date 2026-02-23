@@ -2,6 +2,9 @@
 
 set -e
 
+# reset nx cache
+nx reset
+
 # cleanup docker environment
 docker rm -f $(docker ps -aq) || true
 echo "y" | docker system prune -a && echo "y" | docker volume prune -a && docker system df
