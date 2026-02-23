@@ -24,11 +24,17 @@ WebSocketsClient webSocket;
 #define WIFIPW "dGu2zeTS"
 
 Servo a1;
+Servo a2;
+Servo a3;
+Servo a4;
 bool alreadyConnected = false;
 
 // hardware pins
 #define LED 25  // on when connected else off
 #define SERVO_PIN_A1 32
+#define SERVO_PIN_A2 33
+#define SERVO_PIN_A3 25
+#define SERVO_PIN_A4 26
 
 void hexdump(const void* mem, const uint32_t& len, const uint8_t& cols = 16) {
   const uint8_t* src = (const uint8_t*)mem;
@@ -200,6 +206,9 @@ void onWebSocketMessage(uint8_t* payload) {
     Serial.println(location);
 
     if (location == "a-1") rotateA1(SERVO_PIN_A1);
+    if (location == "a-2") rotateA2(SERVO_PIN_A2);
+    if (location == "a-3") rotateA3(SERVO_PIN_A3);
+    if (location == "a-4") rotateA4(SERVO_PIN_A4);
   }
 }
 
@@ -210,4 +219,31 @@ void rotateA1(int pin) {
   delay(6000);
 
   a1.detach();
+}
+
+void rotateA2(int pin) {
+  if (!a2.attached()) a2.attach(pin);
+
+  a2.write(40);  // rotate
+  delay(6000);
+
+  a2.detach();
+}
+
+void rotateA3(int pin) {
+  if (!a3.attached()) a3.attach(pin);
+
+  a3.write(40);  // rotate
+  delay(6000);
+
+  a3.detach();
+}
+
+void rotateA4(int pin) {
+  if (!a4.attached()) a4.attach(pin);
+
+  a4.write(40);  // rotate
+  delay(6000);
+
+  a4.detach();
 }
