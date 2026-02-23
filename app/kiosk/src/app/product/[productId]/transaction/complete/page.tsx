@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useCallback, useEffect, useState, useRef } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { Box, Container, Stack, Text, Button } from '@chakra-ui/react';
 import { FaCheckCircle } from 'react-icons/fa';
@@ -14,6 +14,8 @@ export default function TransactionCompletePage() {
   const [isProcessing, setIsProcessing] = useState(true);
   
   const hasRecorded = useRef(false);
+  const hasNavigated = useRef(false);
+  const redirectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     async function recordTransaction() {
@@ -50,9 +52,30 @@ export default function TransactionCompletePage() {
     recordTransaction();
   }, [productId, searchParams]);
 
-  const handleGoHome = () => {
+  const handleGoHome = useCallback(() => {
+    if (hasNavigated.current) return;
+    hasNavigated.current = true;
+
+    if (redirectTimeoutRef.current) {
+      clearTimeout(redirectTimeoutRef.current);
+      redirectTimeoutRef.current = null;
+    }
+
     router.push('/');
-  };
+  }, [router]);
+
+  useEffect(() => {
+    redirectTimeoutRef.current = setTimeout(() => {
+      handleGoHome();
+    }, 5000);
+
+    return () => {
+      if (redirectTimeoutRef.current) {
+        clearTimeout(redirectTimeoutRef.current);
+        redirectTimeoutRef.current = null;
+      }
+    };
+  }, [handleGoHome]);
 
   return (
     <Box
