@@ -144,3 +144,6 @@ Save and exit. Reboot the Raspberry Pi to verify it auto-starts in kiosk mode.
 ```bash
 sudo reboot now
 ```
+### Note !!
+
+Disable `crontab` when not in use. Just comment again the line with `@reboot` by adding `#` at the beginning.
