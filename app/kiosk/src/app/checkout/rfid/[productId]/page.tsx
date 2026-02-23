@@ -79,12 +79,13 @@ export default function RFIDCheckoutPage() {
 
   if (error) {
     return (
-      <Container maxW="container.md" py={8}>
+      <Container maxW="container.md" py={4}>
         <Stack gap={4}>
           <Button
             variant="ghost"
             onClick={handleBack}
             alignSelf="flex-start"
+            size="sm"
           >
             <FaArrowLeft />
             Back to Products
@@ -97,11 +98,11 @@ export default function RFIDCheckoutPage() {
 
   if (isLoading) {
     return (
-      <Container maxW="container.md" py={8}>
-        <Stack gap={6}>
+      <Container maxW="container.md" py={4}>
+        <Stack gap={4}>
           <Skeleton height="10" width="200px" />
           <Card.Root>
-            <Card.Body p={8}>
+            <Card.Body p={6}>
               <Stack gap={4}>
                 <Skeleton height="8" width="60%" />
                 <Skeleton height="6" width="80%" />
@@ -117,7 +118,7 @@ export default function RFIDCheckoutPage() {
 
   if (!product) {
     return (
-      <Container maxW="container.md" py={8}>
+      <Container maxW="container.md" py={4}>
         <EmptyState title="Product not found" description="The product you're looking for doesn't exist" />
       </Container>
     );
@@ -125,13 +126,14 @@ export default function RFIDCheckoutPage() {
 
   return (
     <Box minHeight="100vh" bg="bg.canvas">
-      <Container maxW="container.md" py={8}>
-        <Stack gap={6}>
+      <Container maxW="container.md" py={4}>
+        <Stack gap={4}>
           {/* Back Button */}
           <Button
             variant="ghost"
             onClick={handleBack}
             alignSelf="flex-start"
+            size="sm"
           >
             <FaArrowLeft />
             Back to Products
@@ -139,10 +141,10 @@ export default function RFIDCheckoutPage() {
 
           {/* Page Header */}
           <Box>
-            <Text fontSize="3xl" fontWeight="bold" color="green.600" _dark={{ color: "green.400" }}>
+            <Text fontSize="2xl" fontWeight="bold" color="green.600" _dark={{ color: "green.400" }}>
               RFID Payment
             </Text>
-            <Text fontSize="md" color="fg.muted" mt={1}>
+            <Text fontSize="sm" color="fg.muted" mt={1}>
               Review your order and confirm payment
             </Text>
           </Box>
@@ -155,7 +157,7 @@ export default function RFIDCheckoutPage() {
               </Text>
             </Card.Header>
             <Card.Body>
-              <Stack gap={6}>
+              <Stack gap={4}>
                 {/* Product Info */}
                 <Box>
                   <Text fontSize="sm" color="fg.muted" mb={2}>
@@ -163,17 +165,17 @@ export default function RFIDCheckoutPage() {
                   </Text>
                   <Flex justify="space-between" align="start">
                     <Box>
-                      <Text fontSize="lg" fontWeight="semibold">
+                      <Text fontSize="md" fontWeight="semibold">
                         {product.name}
                       </Text>
-                      <Text fontSize="sm" color="fg.muted">
+                      <Text fontSize="xs" color="fg.muted">
                         Code: {product.code}
                       </Text>
-                      <Text fontSize="sm" color="fg.muted">
+                      <Text fontSize="xs" color="fg.muted">
                         Location: {product.location}
                       </Text>
                     </Box>
-                    <Text fontSize="2xl" fontWeight="bold" color="colorPalette.600">
+                    <Text fontSize="xl" fontWeight="bold" color="colorPalette.600">
                       ₱{product.price.toFixed(2)}
                     </Text>
                   </Flex>
@@ -183,22 +185,22 @@ export default function RFIDCheckoutPage() {
                 <Box borderTopWidth="1px" pt={4}>
                   <Flex align="center" gap={2} mb={3}>
                     <FaWallet />
-                    <Text fontSize="sm" color="fg.muted">
+                    <Text fontSize="xs" color="fg.muted">
                       Current Running Total
                     </Text>
                   </Flex>
-                  <Text fontSize="2xl" fontWeight="bold" color="colorPalette.600">
+                  <Text fontSize="xl" fontWeight="bold" color="colorPalette.600">
                     ₱{load.toFixed(2)}
                   </Text>
                 </Box>
 
                 {/* Running Total After Purchase */}
-                <Box bg="bg.subtle" p={4} borderRadius="md">
+                <Box bg="bg.subtle" p={3} borderRadius="md">
                   <Flex justify="space-between" align="center">
-                    <Text fontSize="sm" color="fg.muted">
+                    <Text fontSize="xs" color="fg.muted">
                       Total after this purchase
                     </Text>
-                    <Text fontSize="lg" fontWeight="semibold">
+                    <Text fontSize="md" fontWeight="semibold">
                       ₱{projectedTotal.toFixed(2)}
                     </Text>
                   </Flex>
@@ -211,7 +213,7 @@ export default function RFIDCheckoutPage() {
                   variant="outline"
                   onClick={handleBack}
                   flex={1}
-                  size="lg"
+                  size="md"
                 >
                   Cancel
                 </Button>
@@ -219,7 +221,7 @@ export default function RFIDCheckoutPage() {
                   colorPalette="green"
                   onClick={handleConfirm}
                   flex={1}
-                  size="lg"
+                  size="md"
                 >
                   Confirm Payment
                 </Button>

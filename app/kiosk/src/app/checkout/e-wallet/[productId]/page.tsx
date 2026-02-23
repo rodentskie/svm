@@ -142,12 +142,13 @@ export default function EWalletCheckoutPage() {
 
   if (error) {
     return (
-      <Container maxW="container.md" py={8}>
+      <Container maxW="container.md" py={4}>
         <Stack gap={4}>
           <Button
             variant="ghost"
             onClick={handleBack}
             alignSelf="flex-start"
+            size="sm"
           >
             <FaArrowLeft />
             Back to Products
@@ -160,11 +161,11 @@ export default function EWalletCheckoutPage() {
 
   if (isLoading) {
     return (
-      <Container maxW="container.md" py={8}>
-        <Stack gap={6}>
+      <Container maxW="container.md" py={4}>
+        <Stack gap={4}>
           <Skeleton height="10" width="200px" />
           <Card.Root>
-            <Card.Body p={8}>
+            <Card.Body p={6}>
               <Stack gap={4}>
                 <Skeleton height="8" width="60%" />
                 <Skeleton height="6" width="80%" />
@@ -180,7 +181,7 @@ export default function EWalletCheckoutPage() {
 
   if (!product) {
     return (
-      <Container maxW="container.md" py={8}>
+      <Container maxW="container.md" py={4}>
         <EmptyState title="Product not found" description="The product you're looking for doesn't exist" />
       </Container>
     );
@@ -188,13 +189,14 @@ export default function EWalletCheckoutPage() {
 
   return (
     <Box minHeight="100vh" bg="bg.canvas">
-      <Container maxW="container.md" py={8}>
-        <Stack gap={6}>
+      <Container maxW="container.md" py={4}>
+        <Stack gap={4}>
           {/* Back Button */}
           <Button
             variant="ghost"
             onClick={handleBack}
             alignSelf="flex-start"
+            size="sm"
           >
             <FaArrowLeft />
             Back to Products
@@ -202,10 +204,10 @@ export default function EWalletCheckoutPage() {
 
           {/* Header */}
           <Box>
-            <Text fontSize="3xl" fontWeight="bold" color="green.600" _dark={{ color: "green.400" }}>
+            <Text fontSize="2xl" fontWeight="bold" color="green.600" _dark={{ color: "green.400" }}>
               E-Wallet Checkout
             </Text>
-            <Text fontSize="sm" color="fg.muted" mt={1}>
+            <Text fontSize="xs" color="fg.muted" mt={1}>
               Complete your purchase with E-Wallet
             </Text>
           </Box>
@@ -213,18 +215,18 @@ export default function EWalletCheckoutPage() {
           {/* Product Details Card */}
           <Card.Root>
             <Card.Header>
-              <Text fontSize="xl" fontWeight="bold">
+              <Text fontSize="lg" fontWeight="bold">
                 Order Summary
               </Text>
             </Card.Header>
             <Card.Body>
-              <Stack gap={4}>
+              <Stack gap={3}>
                 <Flex justify="space-between" align="start">
                   <Box flex={1}>
-                    <Text fontSize="2xl" fontWeight="bold">
+                    <Text fontSize="xl" fontWeight="bold">
                       {product.name}
                     </Text>
-                    <Text fontSize="sm" color="fg.muted" mt={1}>
+                    <Text fontSize="xs" color="fg.muted" mt={1}>
                       Code: {product.code} | Location: {product.location}
                     </Text>
                   </Box>
@@ -242,10 +244,10 @@ export default function EWalletCheckoutPage() {
 
                 <Box borderTop="1px solid" borderColor="border.subtle" pt={4}>
                   <Flex justify="space-between" align="center">
-                    <Text fontSize="lg" fontWeight="medium">
+                    <Text fontSize="md" fontWeight="medium">
                       Total Amount
                     </Text>
-                    <Text fontSize="3xl" fontWeight="bold" color="green.600" _dark={{ color: "green.400" }}>
+                    <Text fontSize="2xl" fontWeight="bold" color="green.600" _dark={{ color: "green.400" }}>
                       ₱{product.price.toFixed(2)}
                     </Text>
                   </Flex>
@@ -257,22 +259,22 @@ export default function EWalletCheckoutPage() {
           {/* Payment Instructions Card */}
           <Card.Root>
             <Card.Header>
-              <Text fontSize="xl" fontWeight="bold">
+              <Text fontSize="lg" fontWeight="bold">
                 Payment Instructions
               </Text>
             </Card.Header>
             <Card.Body>
-              <Stack gap={3}>
-                <Text color="fg.muted">
+              <Stack gap={2}>
+                <Text color="fg.muted" fontSize="sm">
                   1. Open your E-Wallet app (GCash, PayMaya, etc.)
                 </Text>
-                <Text color="fg.muted">
+                <Text color="fg.muted" fontSize="sm">
                   2. Scan the QR code that will appear after confirming
                 </Text>
-                <Text color="fg.muted">
+                <Text color="fg.muted" fontSize="sm">
                   3. Complete the payment in your E-Wallet app
                 </Text>
-                <Text color="fg.muted">
+                <Text color="fg.muted" fontSize="sm">
                   4. Wait for confirmation and collect your item
                 </Text>
               </Stack>
@@ -280,18 +282,19 @@ export default function EWalletCheckoutPage() {
           </Card.Root>
 
           {/* Action Buttons */}
-          <Flex gap={3} direction={{ base: 'column', sm: 'row' }}>
+          <Flex gap={2} direction="row" position="sticky" bottom={0} bg="bg.canvas" pt={2}>
             <Button
               variant="outline"
               onClick={handleBack}
               flex={1}
+              size="md"
             >
               Cancel
             </Button>
             <Button
               colorPalette="green"
-              size="lg"
-              flex={2}
+              size="md"
+              flex={1}
               disabled={product.quantity === 0}
               onClick={handleProceedToPayment}
             >
@@ -302,7 +305,7 @@ export default function EWalletCheckoutPage() {
       </Container>
 
       {/* E-Wallet Selection Dialog */}
-      <DialogRoot open={isWalletDialogOpen} onOpenChange={(e) => !e.open && setIsWalletDialogOpen(false)} size="md">
+      <DialogRoot open={isWalletDialogOpen} onOpenChange={(e) => !e.open && setIsWalletDialogOpen(false)} size="sm">
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Select E-Wallet</DialogTitle>
@@ -314,24 +317,24 @@ export default function EWalletCheckoutPage() {
           <DialogCloseTrigger />
 
           <DialogBody>
-            <Stack gap={3}>
+            <Stack gap={2}>
               <Button
-                size="xl"
+                size="lg"
                 variant="outline"
                 colorPalette="green"
                 onClick={() => handleWalletSelect('gcash')}
                 height="auto"
-                py={6}
+                py={4}
               >
                 <Box display="flex" alignItems="center" gap={4} width="100%">
                   <Box color="green.600" _dark={{ color: "green.400" }}>
-                    <FaWallet size={24} />
+                    <FaWallet size={20} />
                   </Box>
                   <Box flex={1} textAlign="left">
-                    <Text fontSize="lg" fontWeight="bold">
+                    <Text fontSize="md" fontWeight="bold">
                       GCash
                     </Text>
-                    <Text fontSize="sm" color="fg.muted">
+                    <Text fontSize="xs" color="fg.muted">
                       Pay using your GCash wallet
                     </Text>
                   </Box>
@@ -339,22 +342,22 @@ export default function EWalletCheckoutPage() {
               </Button>
 
               <Button
-                size="xl"
+                size="lg"
                 variant="outline"
                 colorPalette="green"
                 onClick={() => handleWalletSelect('paymaya')}
                 height="auto"
-                py={6}
+                py={4}
               >
                 <Box display="flex" alignItems="center" gap={4} width="100%">
                   <Box color="green.600">
-                    <FaWallet size={24} />
+                    <FaWallet size={20} />
                   </Box>
                   <Box flex={1} textAlign="left">
-                    <Text fontSize="lg" fontWeight="bold">
+                    <Text fontSize="md" fontWeight="bold">
                       PayMaya
                     </Text>
-                    <Text fontSize="sm" color="fg.muted">
+                    <Text fontSize="xs" color="fg.muted">
                       Pay using your PayMaya wallet
                     </Text>
                   </Box>
@@ -372,7 +375,7 @@ export default function EWalletCheckoutPage() {
       </DialogRoot>
 
       {/* QR Code Payment Dialog */}
-      <DialogRoot open={isQrDialogOpen} onOpenChange={(e) => !e.open && setIsQrDialogOpen(false)} size="lg">
+      <DialogRoot open={isQrDialogOpen} onOpenChange={(e) => !e.open && setIsQrDialogOpen(false)} size="md">
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Scan QR Code to Pay</DialogTitle>
@@ -384,12 +387,12 @@ export default function EWalletCheckoutPage() {
           <DialogCloseTrigger />
 
           <DialogBody>
-            <Stack gap={4} alignItems="center">
+            <Stack gap={3} alignItems="center">
               {isProcessingPayment ? (
-                <Box width="300px" height="300px" display="flex" alignItems="center" justifyContent="center">
+                <Box width="220px" height="220px" display="flex" alignItems="center" justifyContent="center">
                   <Stack gap={3} width="100%">
-                    <Skeleton height="300px" width="300px" />
-                    <Text textAlign="center" color="fg.muted">
+                    <Skeleton height="220px" width="220px" />
+                    <Text textAlign="center" color="fg.muted" fontSize="sm">
                       Generating QR code...
                     </Text>
                   </Stack>
@@ -397,13 +400,13 @@ export default function EWalletCheckoutPage() {
               ) : qrCodeUrl ? (
                 <>
                   <Box p={4} borderRadius="md">
-                    <QrCode value={qrCodeUrl} size={"xl"} />
+                    <QrCode value={qrCodeUrl} size={"lg"} />
                   </Box>
                   <Stack gap={2} textAlign="center">
-                    <Text fontWeight="bold" fontSize="lg">
+                    <Text fontWeight="bold" fontSize="md">
                       ₱{product?.price.toFixed(2)}
                     </Text>
-                    <Text fontSize="sm" color="fg.muted">
+                    <Text fontSize="xs" color="fg.muted">
                       Scan with your {selectedWallet === 'gcash' ? 'GCash' : 'PayMaya'} app
                     </Text>
                     <Text fontSize="xs" color="fg.muted">

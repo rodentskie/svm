@@ -63,29 +63,29 @@ export default function TransactionCompletePage() {
       justifyContent="center"
     >
       <Container maxW="container.sm">
-        <Stack gap={6} textAlign="center" p={8}>
+        <Stack gap={4} textAlign="center" p={5}>
           <Box display="flex" justifyContent="center">
-            <Box color="green.500" fontSize="6xl">
+            <Box color="green.500" fontSize="5xl">
               <FaCheckCircle />
             </Box>
           </Box>
 
           <Stack gap={2}>
-            <Text fontSize="3xl" fontWeight="bold">
+            <Text fontSize="2xl" fontWeight="bold">
               Payment Successful!
             </Text>
-            <Text fontSize="lg" color="fg.muted">
+            <Text fontSize="md" color="fg.muted">
               Your transaction has been completed successfully
             </Text>
           </Stack>
 
-          <Stack gap={3} mt={4}>
-            <Text fontSize="sm" color="fg.muted">
+          <Stack gap={2} mt={2}>
+            <Text fontSize="xs" color="fg.muted">
               Please collect your item from the vending machine
             </Text>
           </Stack>
 
-          <Button colorPalette="green" size="lg" onClick={handleGoHome} mt={4}>
+          <Button colorPalette="green" size="md" onClick={handleGoHome} mt={2}>
             Back to Home
           </Button>
         </Stack>
