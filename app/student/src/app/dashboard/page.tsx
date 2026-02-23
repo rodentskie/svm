@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import {
   Badge,
   Box,
+  Button,
   Card,
   Flex,
   Heading,
@@ -16,8 +17,17 @@ import {
   Text,
 } from '@chakra-ui/react';
 import { ColorModeButton } from '@svm/components/color-mode';
+import {
+  DialogBackdrop,
+  DialogBody,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogRoot,
+  DialogTitle,
+} from '@svm/components/dialog';
 import { PopoverContent } from '@svm/components/popover';
-import { LuBell, LuCheck } from 'react-icons/lu';
+import { LuBell, LuCheck, LuLogOut } from 'react-icons/lu';
 
 type StudentTransaction = {
   id: number;
@@ -52,6 +62,7 @@ export default function StudentDashboardPage() {
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [markingRead, setMarkingRead] = useState(false);
+  const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
   const [error, setError] = useState('');
   const [popoverOpen, setPopoverOpen] = useState(false);
 
@@ -178,6 +189,14 @@ export default function StudentDashboardPage() {
     }
   };
 
+  const handleConfirmLogout = () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('student_rfid');
+    }
+    setIsLogoutDialogOpen(false);
+    router.push('/');
+  };
+
   useEffect(() => {
     fetchData(0, false);
   }, [fetchData]);
@@ -217,6 +236,14 @@ export default function StudentDashboardPage() {
         <Heading size="md">Student Dashboard</Heading>
         <HStack gap={2}>
           <ColorModeButton />
+          <IconButton
+            aria-label="Logout"
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsLogoutDialogOpen(true)}
+          >
+            <LuLogOut />
+          </IconButton>
           <Popover.Root
             open={popoverOpen}
             onOpenChange={(details) => setPopoverOpen(details.open)}
@@ -348,6 +375,29 @@ export default function StudentDashboardPage() {
           </Card.Body>
         </Card.Root>
       </Box>
+
+      <DialogRoot
+        open={isLogoutDialogOpen}
+        onOpenChange={(details) => setIsLogoutDialogOpen(details.open)}
+      >
+        <DialogBackdrop />
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Logout</DialogTitle>
+          </DialogHeader>
+          <DialogBody>
+            <Text>Are you sure you want to logout?</Text>
+          </DialogBody>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsLogoutDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button colorPalette="red" onClick={handleConfirmLogout}>
+              OK
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </DialogRoot>
     </Box>
   );
 }
