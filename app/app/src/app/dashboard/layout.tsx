@@ -25,6 +25,11 @@ export default function DashboardPage(props: { children: React.ReactNode }) {
 
   const handleNavigate = (itemId: string) => {
     setActiveItem(itemId);
+    if (itemId === 'home') {
+      router.push('/dashboard');
+      return;
+    }
+
     router.push(`/dashboard/${itemId}`);
     // Add navigation logic here, e.g., router.push(`/${itemId}`)
   };

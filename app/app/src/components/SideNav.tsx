@@ -4,6 +4,7 @@ import { Box, Flex, IconButton, VStack } from '@chakra-ui/react';
 import {
   FiMenu,
   FiX,
+  FiHome,
   FiUsers,
   FiShoppingCart,
   FiPackage,
@@ -27,6 +28,7 @@ interface SideNavProps {
 }
 
 const defaultNavItems: NavItemConfig[] = [
+  { id: 'home', label: 'Home', icon: <FiHome />, path: '/dashboard' },
   { id: 'users', label: 'Users', icon: <FiUsers />, path: '/users' },
   {
     id: 'transactions',
