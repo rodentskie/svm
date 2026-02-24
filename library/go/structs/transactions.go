@@ -16,7 +16,8 @@ type CreateTransactionAdjustmentRequest struct {
 }
 
 type CreatePaymentMethod struct {
-	Method string `json:"method" validate:"required,oneof=gcash paymaya"`
+	Method        string `json:"method" validate:"required,oneof=gcash paymaya qrph"`
+	ExpirySeconds uint16 `json:"expiry_seconds" validate:"required,min=1"`
 }
 
 type CreatePaymentIntent struct {
