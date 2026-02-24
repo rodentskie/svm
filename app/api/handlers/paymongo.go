@@ -29,27 +29,44 @@ func PayMongoCreatePaymentMethod(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	validMethods := []string{"gcash", "paymaya"}
+	validMethods := []string{"gcash", "paymaya", "qrph"}
 	methodValid := slices.Contains(validMethods, reqBody.Method)
 
 	if !methodValid {
-		responses.ErrorResponse(w, http.StatusBadRequest, "Invalid payment method. Valid methods are: gcash, paymaya")
+		responses.ErrorResponse(w, http.StatusBadRequest, "Invalid payment method. Valid methods are: gcash, paymaya, qrph")
 		return
 	}
 
 	pk := env.GetEnv("PAYMONGO_SECRET_KEY", "pk_test_zzxxx")
+	live := env.GetEnv("PAYMONGO_LIVE", "false")
+	// parse live as boolean
+	isLive := strings.ToLower(live) == "true"
+
 	encodedPK := base64.StdEncoding.EncodeToString([]byte(pk))
 
 	url := "https://api.paymongo.com/v1/payment_methods"
 	method := "POST"
 
-	payload := strings.NewReader(`{
+	var payload *strings.Reader
+
+	if isLive {
+		payload = strings.NewReader(`{
+    "data": {
+        "attributes": {
+            "type": "` + reqBody.Method + `",
+			"expiry_seconds": ` + fmt.Sprintf("%v", reqBody.ExpirySeconds) + `
+        }
+    }
+}`)
+	} else {
+		payload = strings.NewReader(`{
     "data": {
         "attributes": {
             "type": "` + reqBody.Method + `"
         }
     }
 }`)
+	}
 
 	client := &http.Client{}
 	req, err := http.NewRequest(method, url, payload)
@@ -105,7 +122,7 @@ func PayMongoCreatePaymentIntent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	validMethods := []string{"gcash", "paymaya"}
+	validMethods := []string{"gcash", "paymaya", "qrph"}
 	methodValid := false
 	for _, method := range reqBody.PaymentMethodsAllowed {
 		if !slices.Contains(validMethods, method) {
@@ -116,7 +133,7 @@ func PayMongoCreatePaymentIntent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !methodValid {
-		responses.ErrorResponse(w, http.StatusBadRequest, "Invalid payment method. Valid methods are: gcash, paymaya")
+		responses.ErrorResponse(w, http.StatusBadRequest, "Invalid payment method. Valid methods are: gcash, paymaya, qrph")
 		return
 	}
 
@@ -217,7 +234,21 @@ func PayMongoAttachPaymentIntent(w http.ResponseWriter, r *http.Request) {
 	url := "https://api.paymongo.com/v1/payment_intents/" + reqBody.PaymentIntentID + "/attach"
 	method := "POST"
 
-	payload := strings.NewReader(`{
+	live := env.GetEnv("PAYMONGO_LIVE", "false")
+	// parse live as boolean
+	isLive := strings.ToLower(live) == "true"
+
+	var payload *strings.Reader
+	if isLive {
+		payload = strings.NewReader(`{
+  "data": {
+    "attributes": {
+      "payment_method": "` + reqBody.PaymentMethodID + `"
+    }
+  }
+}`)
+	} else {
+		payload = strings.NewReader(`{
   "data": {
     "attributes": {
       "payment_method": "` + reqBody.PaymentMethodID + `",
@@ -225,6 +256,7 @@ func PayMongoAttachPaymentIntent(w http.ResponseWriter, r *http.Request) {
     }
   }
 }`)
+	}
 
 	client := &http.Client{}
 	req, err := http.NewRequest(method, url, payload)

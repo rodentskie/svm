@@ -54,13 +54,16 @@ Usually, only these values need to be customized:
 - `PAYMONGO_PUBLIC_KEY`
 - `PAYMONGO_SECRET_KEY`
 - `CORS_ORIGINS`
+- `PAYMONGO_LIVE`
 
 ```env
 PAYMONGO_PUBLIC_KEY=<paymongo_test_public_key>
 PAYMONGO_SECRET_KEY=<paymongo_test_secret_key>
+PAYMONGO_LIVE=false
 PAYMONGO_API_URL=https://api.paymongo.com/v1
 DATABASE_URL=postgres://svm:superpw64@pg:5432/svm?sslmode=disable
 CORS_ORIGINS=http://<ip>:3000,http://<ip>:4000,http://<ip>:5000
+WS_HOST=http://<ip>:8081/ws
 ```
 
 ### `app/app/.env.production`
@@ -74,6 +77,7 @@ NEXT_PUBLIC_API_URL=http://<ip>:8000/v1
 ```env
 NEXT_PUBLIC_API_URL=http://<ip>:8000/v1
 NEXT_PUBLIC_APP_URL=http://<ip>:4000
+NEXT_PUBLIC_PAYMONGO_LIVE=false
 ```
 
 ### `app/migrations/.env`
