@@ -99,7 +99,7 @@ services:
     environment:
       ENV: dev
     ports:
-      - '7000:3000'
+      - '5010:3000'
     restart: unless-stopped
     networks:
       - svm-network
