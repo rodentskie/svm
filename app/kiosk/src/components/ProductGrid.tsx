@@ -19,7 +19,7 @@ export function ProductGrid({ products, onAddToCart, isLoading = false }: Produc
       <Box position="relative" minH={{ base: '65vh', lg: '75vh' }}>
         <VendingMachineBackdrop opacity={0.08} />
         <Image
-          src="/nddu.jpg"
+          src="/nddu.png"
           alt="NDDU"
           position="absolute"
           bottom={4}
@@ -72,7 +72,7 @@ export function ProductGrid({ products, onAddToCart, isLoading = false }: Produc
     <Box position="relative" minH={{ base: '65vh', lg: '75vh' }}>
       <VendingMachineBackdrop />
       <Image
-        src="/nddu.jpg"
+        src="/nddu.png"
         alt="NDDU"
         position="absolute"
         bottom={4}
