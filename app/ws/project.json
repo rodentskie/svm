@@ -19,6 +19,16 @@
         "cmd": "gow"
       }
     },
+    "dev": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "{projectRoot}",
+        "commands": [
+          "gow run ."
+        ],
+        "parallel": false
+      }
+    },
     "test": {
       "executor": "@nx-go/nx-go:test"
     },
