@@ -15,7 +15,6 @@
     "sharedGlobals": ["{workspaceRoot}/go.work"]
   },
   "plugins": [
-    "@obiente-lab/nx-go",
     {
       "plugin": "@nx/next/plugin",
       "options": {

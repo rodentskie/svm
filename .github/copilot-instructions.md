@@ -5,7 +5,7 @@ This is a **Smart Vending Machine** system. It is built using Go in a monorepo s
 
 ## Architecture Overview
 
-This is a **Go monorepo managed by Nx** (`@obiente-lab/nx-go` plugin) using **Go workspaces** (`go.work`). The project structure separates concerns into:
+This is a **Go monorepo managed by Nx** (`@nx-go/nx-go` plugin) using **Go workspaces** (`go.work`). The project structure separates concerns into:
 - `app/`: Executable applications (API server, migrations CLI, Next.js frontends)
   - `api/`: Go HTTP API server with authentication and business logic
   - `migrations/`: CLI for database schema management (golang-migrate)
@@ -188,12 +188,12 @@ This is configured via `go.work` which links all modules. When creating new libr
 
 **New library**:
 ```bash
-NAME=mylib && nx g @obiente-lab/nx-go:library $NAME --directory library/go/$NAME
+NAME=mylib && nx g @nx-go/nx-go:library $NAME --directory library/go/$NAME
 ```
 
 **New application**:
 ```bash
-NAME=myapp && nx g @obiente-lab/nx-go:application $NAME --directory app/$NAME
+NAME=myapp && nx g @nx-go/nx-go:application $NAME --directory app/$NAME
 ```
 
 After generation, add the new module path to `go.work` manually.

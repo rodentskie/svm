@@ -8,7 +8,7 @@ Monorepo powered by [NX](https://nx.dev/)
 
 
 ```
-NAME=env && nx g @obiente-lab/nx-go:library $NAME --directory library/go/$NAME
+NAME=env && nx g @nx-go/nx-go:library $NAME --directory library/go/$NAME
 
 To remove:
 nx g rm <name>
@@ -18,7 +18,7 @@ nx g rm <name>
 
 
 ```
-NAME=api && nx g @obiente-lab/nx-go:application $NAME --directory app/$NAME
+NAME=api && nx g @nx-go/nx-go:application $NAME --directory app/$NAME
 
 To remove:
 nx g rm <name>
